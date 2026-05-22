@@ -32,6 +32,33 @@ export interface TeamData {
   recent_matches: RecentMatch[];
 }
 
+export interface InjuredPlayer {
+  name: string;
+  reason: string;
+  photo?: string;
+}
+
+export interface Stadium {
+  name: string;
+  city: string;
+  capacity?: number;
+  surface?: string;
+  image?: string;
+  home_team_logo?: string;
+}
+
+export interface Weather {
+  city: string;
+  date: string;
+  temp_max: number;
+  temp_min: number;
+  precipitation: number;
+  windspeed: number;
+  description: string;
+  emoji: string;
+  impact: string;
+}
+
 export interface Prediction {
   home_team: string;
   away_team: string;
@@ -46,6 +73,12 @@ export interface Prediction {
     home: TeamData;
     away: TeamData;
   };
+  injuries?: {
+    home: { team: string; players: InjuredPlayer[] };
+    away: { team: string; players: InjuredPlayer[] };
+  };
+  stadium?: Stadium;
+  weather?: Weather;
 }
 
 export async function fetchLeagues(): Promise<string[]> {
@@ -60,10 +93,11 @@ export async function fetchMatches(league: string): Promise<Match[]> {
 
 export async function fetchPrediction(match: Match, league: string): Promise<Prediction> {
   const { data } = await api.post("/predict", {
-    home_team: match.home,
-    away_team: match.away,
-    home_id: match.home_id,
-    away_id: match.away_id,
+    home_team:  match.home,
+    away_team:  match.away,
+    home_id:    match.home_id,
+    away_id:    match.away_id,
+    match_date: match.date,
     league,
   });
   return data;

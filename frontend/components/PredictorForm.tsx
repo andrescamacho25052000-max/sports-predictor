@@ -5,6 +5,7 @@ import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction } from "
 import ProbabilityBar from "./ProbabilityBar";
 import FactorsList from "./FactorsList";
 import TeamStats from "./TeamStats";
+import MatchContext from "./MatchContext";
 
 export default function PredictorForm() {
   const [leagues, setLeagues] = useState<string[]>([]);
@@ -164,6 +165,12 @@ export default function PredictorForm() {
               awayTeam={prediction.away_team}
             />
           )}
+
+          <MatchContext
+            stadium={prediction.stadium}
+            weather={prediction.weather}
+            injuries={prediction.injuries}
+          />
         </div>
       )}
     </div>
