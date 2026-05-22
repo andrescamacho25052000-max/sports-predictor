@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction } from "@/lib/api";
 import ProbabilityBar from "./ProbabilityBar";
 import FactorsList from "./FactorsList";
+import TeamStats from "./TeamStats";
 
 export default function PredictorForm() {
   const [leagues, setLeagues] = useState<string[]>([]);
@@ -154,6 +155,15 @@ export default function PredictorForm() {
           <p className="text-center text-gray-500 text-xs">
             Modelo: {prediction.model} · Los porcentajes son probabilidades estimadas, no garantías.
           </p>
+
+          {prediction.team_stats && (
+            <TeamStats
+              home={prediction.team_stats.home}
+              away={prediction.team_stats.away}
+              homeTeam={prediction.home_team}
+              awayTeam={prediction.away_team}
+            />
+          )}
         </div>
       )}
     </div>

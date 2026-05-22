@@ -155,6 +155,45 @@ def get_team_stats(team_name: str, team_id: int, league: str) -> dict:
     return form
 
 
+def get_team_recent_matches(team_id: int, limit: int = 5) -> list:
+    """Retorna el historial detallado de los últimos N partidos de un equipo."""
+    data = _get(f"/teams/{team_id}/matches?status=FINISHED&limit={limit}")
+    if not data or "matches" not in data:
+        return []
+
+    result = []
+    for m in data["matches"][-limit:]:
+        home_team = m.get("homeTeam", {})
+        away_team = m.get("awayTeam", {})
+        home_id_m = home_team.get("id")
+        score = m.get("score", {}).get("fullTime", {})
+        h = score.get("home", 0) or 0
+        a = score.get("away", 0) or 0
+
+        is_home = (home_id_m == team_id)
+        gf = h if is_home else a
+        gc = a if is_home else h
+        opponent = away_team.get("name", "?") if is_home else home_team.get("name", "?")
+
+        if gf > gc:
+            res = "V"
+        elif gf == gc:
+            res = "E"
+        else:
+            res = "D"
+
+        result.append({
+            "opponent": opponent,
+            "goals_for": gf,
+            "goals_against": gc,
+            "result": res,
+            "was_home": is_home,
+            "date": m.get("utcDate", "")[:10],
+        })
+
+    return result
+
+
 def _empty_form() -> dict:
     return {
         "wins_last5": 2, "draws_last5": 1, "losses_last5": 2,

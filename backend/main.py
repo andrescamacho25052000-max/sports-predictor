@@ -64,13 +64,41 @@ def post_prediction(body: dict):
 
     home_stats = None
     away_stats = None
+    team_data = None
 
     # Si tenemos IDs reales, obtenemos stats de la API
     if home_id and away_id:
-        home_stats = fapi.get_team_stats(home, int(home_id), league)
-        away_stats = fapi.get_team_stats(away, int(away_id), league)
+        home_stats  = fapi.get_team_stats(home, int(home_id), league)
+        away_stats  = fapi.get_team_stats(away, int(away_id), league)
+        standings   = fapi.get_standings(league)
+
+        def find_ranking(name: str) -> int:
+            r = standings.get(name)
+            if not r:
+                for n, p in standings.items():
+                    if name.lower() in n.lower() or n.lower() in name.lower():
+                        return p
+            return r or 99
+
+        home_recent = fapi.get_team_recent_matches(int(home_id))
+        away_recent = fapi.get_team_recent_matches(int(away_id))
+
+        team_data = {
+            "home": {
+                "ranking": find_ranking(home),
+                "league": league,
+                "recent_matches": home_recent,
+            },
+            "away": {
+                "ranking": find_ranking(away),
+                "league": league,
+                "recent_matches": away_recent,
+            },
+        }
 
     result = predict(home, away, home_stats, away_stats)
+    if team_data:
+        result["team_stats"] = team_data
     return result
 
 

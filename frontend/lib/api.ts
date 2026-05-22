@@ -17,6 +17,21 @@ export interface Factor {
   detail: string;
 }
 
+export interface RecentMatch {
+  opponent: string;
+  goals_for: number;
+  goals_against: number;
+  result: "V" | "E" | "D";
+  was_home: boolean;
+  date: string;
+}
+
+export interface TeamData {
+  ranking: number;
+  league: string;
+  recent_matches: RecentMatch[];
+}
+
 export interface Prediction {
   home_team: string;
   away_team: string;
@@ -27,6 +42,10 @@ export interface Prediction {
   };
   factors: Factor[];
   model: string;
+  team_stats?: {
+    home: TeamData;
+    away: TeamData;
+  };
 }
 
 export async function fetchLeagues(): Promise<string[]> {
