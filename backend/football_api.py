@@ -9,14 +9,43 @@ API_KEY = os.getenv("FOOTBALL_API_KEY")
 BASE_URL = "https://api.football-data.org/v4"
 HEADERS = {"X-Auth-Token": API_KEY}
 
-# Ligas disponibles en el plan gratuito
+# Todas las competiciones disponibles en el plan gratuito de football-data.org
 COMPETITIONS = {
-    "Premier League":   "PL",
-    "La Liga":          "PD",
-    "Bundesliga":       "BL1",
-    "Serie A":          "SA",
-    "Ligue 1":          "FL1",
-    "Champions League": "CL",
+    # Europa — Ligas
+    "Premier League":       "PL",
+    "Championship":         "ELC",
+    "La Liga":              "PD",
+    "Bundesliga":           "BL1",
+    "Serie A":              "SA",
+    "Ligue 1":              "FL1",
+    "Eredivisie":           "DED",
+    "Primeira Liga":        "PPL",
+    # Europa — Copas
+    "Champions League":     "CL",
+    "Eurocopa":             "EC",
+    # Sudamérica
+    "Copa Libertadores":    "CLI",
+    # Brasil
+    "Brasileirao Serie A":  "BSA",
+    # Mundo
+    "Mundial FIFA":         "WC",
+}
+
+# Agrupación por región (para mostrar en el frontend)
+COMPETITION_REGIONS = {
+    "Premier League":       "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra",
+    "Championship":         "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra",
+    "La Liga":              "🇪🇸 España",
+    "Bundesliga":           "🇩🇪 Alemania",
+    "Serie A":              "🇮🇹 Italia",
+    "Ligue 1":              "🇫🇷 Francia",
+    "Eredivisie":           "🇳🇱 Países Bajos",
+    "Primeira Liga":        "🇵🇹 Portugal",
+    "Champions League":     "🌍 Europa",
+    "Eurocopa":             "🌍 Europa",
+    "Copa Libertadores":    "🌎 Sudamérica",
+    "Brasileirao Serie A":  "🇧🇷 Brasil",
+    "Mundial FIFA":         "🌍 Mundo",
 }
 
 # Cache en memoria para respetar el límite de 10 req/min

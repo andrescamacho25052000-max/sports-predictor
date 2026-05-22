@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction } from "@/lib/api";
+import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction, League } from "@/lib/api";
 import ProbabilityBar from "./ProbabilityBar";
 import FactorsList from "./FactorsList";
 import TeamStats from "./TeamStats";
 import MatchContext from "./MatchContext";
 
 export default function PredictorForm() {
-  const [leagues, setLeagues] = useState<string[]>([]);
+  const [leagues, setLeagues]           = useState<League[]>([]);
   const [selectedLeague, setSelectedLeague] = useState("");
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [prediction, setPrediction] = useState<Prediction | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [backendDown, setBackendDown] = useState(false);
+  const [matches, setMatches]           = useState<Match[]>([]);
+  const [selectedMatch, setSelectedMatch]   = useState<Match | null>(null);
+  const [prediction, setPrediction]     = useState<Prediction | null>(null);
+  const [loading, setLoading]           = useState(false);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [error, setError]               = useState("");
+  const [backendDown, setBackendDown]   = useState(false);
 
   useEffect(() => {
     fetchLeagues()
@@ -27,7 +28,12 @@ export default function PredictorForm() {
     if (!selectedLeague) return;
     setSelectedMatch(null);
     setPrediction(null);
-    fetchMatches(selectedLeague).then(setMatches).catch(() => setError("Error al cargar partidos"));
+    setMatches([]);
+    setLoadingMatches(true);
+    fetchMatches(selectedLeague)
+      .then(setMatches)
+      .catch(() => setError("Error al cargar partidos"))
+      .finally(() => setLoadingMatches(false));
   }, [selectedLeague]);
 
   const handleAnalyze = async () => {
@@ -45,13 +51,18 @@ export default function PredictorForm() {
     }
   };
 
+  // Agrupar ligas por región
+  const leaguesByRegion = leagues.reduce<Record<string, League[]>>((acc, l) => {
+    if (!acc[l.region]) acc[l.region] = [];
+    acc[l.region].push(l);
+    return acc;
+  }, {});
+
   if (backendDown) {
     return (
       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-2xl p-6 text-center space-y-2">
         <p className="text-yellow-400 font-semibold">Backend no disponible</p>
-        <p className="text-gray-400 text-sm">
-          Ejecuta el backend primero:
-        </p>
+        <p className="text-gray-400 text-sm">Ejecuta el backend primero:</p>
         <code className="bg-black/40 text-green-400 text-xs px-3 py-2 rounded-lg block">
           cd backend && uvicorn main:app --reload
         </code>
@@ -63,35 +74,44 @@ export default function PredictorForm() {
     <div className="space-y-6">
       {/* Selectors */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+        {/* Liga */}
         <div className="space-y-2">
-          <label className="text-sm text-gray-400 font-medium">Liga</label>
+          <label className="text-sm text-gray-400 font-medium">Liga / Competición</label>
           <select
             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer hover:bg-white/15 transition focus:outline-none focus:ring-2 focus:ring-emerald-500"
             value={selectedLeague}
             onChange={(e) => setSelectedLeague(e.target.value)}
           >
-            <option value="" className="bg-gray-900">Selecciona una liga...</option>
-            {leagues.map((l) => (
-              <option key={l} value={l} className="bg-gray-900">{l}</option>
+            <option value="" className="bg-gray-900">Selecciona una competición...</option>
+            {Object.entries(leaguesByRegion).map(([region, ls]) => (
+              <optgroup key={region} label={region} className="bg-gray-900 text-gray-400">
+                {ls.map((l) => (
+                  <option key={l.name} value={l.name} className="bg-gray-900 text-white">
+                    {l.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
 
+        {/* Partido */}
         <div className="space-y-2">
           <label className="text-sm text-gray-400 font-medium">Partido</label>
           <select
             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer hover:bg-white/15 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
             value={selectedMatch ? `${selectedMatch.home}|${selectedMatch.away}` : ""}
             onChange={(e) => {
-              const found = matches.find(
-                (m) => `${m.home}|${m.away}` === e.target.value
-              );
+              const found = matches.find((m) => `${m.home}|${m.away}` === e.target.value);
               setSelectedMatch(found || null);
               setPrediction(null);
             }}
-            disabled={!selectedLeague}
+            disabled={!selectedLeague || loadingMatches}
           >
-            <option value="" className="bg-gray-900">Selecciona un partido...</option>
+            <option value="" className="bg-gray-900">
+              {loadingMatches ? "Cargando partidos..." : matches.length === 0 && selectedLeague ? "Sin partidos programados" : "Selecciona un partido..."}
+            </option>
             {matches.map((m) => (
               <option key={`${m.home}|${m.away}`} value={`${m.home}|${m.away}`} className="bg-gray-900">
                 {m.home} vs {m.away}
@@ -101,16 +121,25 @@ export default function PredictorForm() {
         </div>
       </div>
 
-      {/* Match display */}
+      {/* Partido seleccionado */}
       {selectedMatch && (
-        <div className="bg-white/5 rounded-2xl p-4 flex items-center justify-between border border-white/10">
-          <span className="text-white font-bold text-lg">{selectedMatch.home}</span>
-          <span className="text-gray-400 text-sm font-medium px-3">vs</span>
-          <span className="text-white font-bold text-lg">{selectedMatch.away}</span>
+        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
+          <div className="flex items-center justify-between">
+            <span className="text-white font-bold text-lg">{selectedMatch.home}</span>
+            <div className="text-center">
+              <span className="text-gray-400 text-sm font-medium block">vs</span>
+              {selectedMatch.date && (
+                <span className="text-gray-500 text-xs">
+                  {new Date(selectedMatch.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                </span>
+              )}
+            </div>
+            <span className="text-white font-bold text-lg">{selectedMatch.away}</span>
+          </div>
         </div>
       )}
 
-      {/* Analyze button */}
+      {/* Botón analizar */}
       <button
         onClick={handleAnalyze}
         disabled={!selectedMatch || loading}
@@ -134,9 +163,9 @@ export default function PredictorForm() {
         </div>
       )}
 
-      {/* Prediction result */}
+      {/* Resultado */}
       {prediction && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
             <ProbabilityBar
               homeTeam={prediction.home_team}
@@ -153,6 +182,7 @@ export default function PredictorForm() {
               />
             </div>
           </div>
+
           <p className="text-center text-gray-500 text-xs">
             Modelo: {prediction.model} · Los porcentajes son probabilidades estimadas, no garantías.
           </p>

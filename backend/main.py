@@ -23,9 +23,11 @@ def root():
 
 @app.get("/leagues")
 def get_leagues():
-    real = fapi.get_leagues()
-    mock = [l for l in LEAGUES if l not in real]
-    return {"leagues": real + mock}
+    leagues = [
+        {"name": name, "region": fapi.COMPETITION_REGIONS.get(name, "🌍 Internacional")}
+        for name in fapi.get_leagues()
+    ]
+    return {"leagues": leagues}
 
 
 @app.get("/leagues/{league}/matches")

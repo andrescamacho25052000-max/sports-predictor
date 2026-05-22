@@ -81,7 +81,12 @@ export interface Prediction {
   weather?: Weather;
 }
 
-export async function fetchLeagues(): Promise<string[]> {
+export interface League {
+  name: string;
+  region: string;
+}
+
+export async function fetchLeagues(): Promise<League[]> {
   const { data } = await api.get("/leagues");
   return data.leagues;
 }
