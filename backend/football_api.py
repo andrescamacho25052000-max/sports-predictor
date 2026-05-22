@@ -223,6 +223,37 @@ def get_team_recent_matches(team_id: int, limit: int = 5) -> list:
     return result
 
 
+def get_h2h(team_id_1: int, team_id_2: int) -> dict | None:
+    """Historial directo entre dos equipos desde el punto de vista de team_id_1."""
+    data = _get(f"/teams/{team_id_1}/matches?status=FINISHED&limit=20")
+    if not data or "matches" not in data:
+        return None
+
+    t1_wins = t2_wins = draws = found = 0
+
+    for m in data["matches"]:
+        h_id = m.get("homeTeam", {}).get("id")
+        a_id = m.get("awayTeam", {}).get("id")
+        if {h_id, a_id} != {team_id_1, team_id_2}:
+            continue
+
+        sc = m.get("score", {}).get("fullTime", {})
+        h  = sc.get("home") or 0
+        a  = sc.get("away") or 0
+        gf = h if h_id == team_id_1 else a
+        gc = a if h_id == team_id_1 else h
+
+        if gf > gc:    t1_wins += 1
+        elif gf == gc: draws   += 1
+        else:          t2_wins += 1
+        found += 1
+
+    if found == 0:
+        return None
+
+    return {"wins": t1_wins, "draws": draws, "losses": t2_wins, "total": found}
+
+
 def _empty_form() -> dict:
     return {
         "wins_last5": 2, "draws_last5": 1, "losses_last5": 2,

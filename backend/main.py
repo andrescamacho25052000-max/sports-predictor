@@ -6,7 +6,7 @@ import football_api as fapi
 import api_sports as asports
 import weather_api as wapi
 
-app = FastAPI(title="Sports Predictor API", version="3.0.0")
+app = FastAPI(title="Sports Predictor API", version="3.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,7 +64,8 @@ def post_prediction(body: dict):
     away_stats = None
     team_data  = None
 
-    # ── Football-Data.org: forma reciente + rankings ──────────────────────
+    # ── Football-Data.org: forma reciente + rankings + H2H ───────────────
+    h2h_data = None
     if home_id and away_id:
         home_stats = fapi.get_team_stats(home, int(home_id), league)
         away_stats = fapi.get_team_stats(away, int(away_id), league)
@@ -80,6 +81,13 @@ def post_prediction(body: dict):
 
         home_recent = fapi.get_team_recent_matches(int(home_id))
         away_recent = fapi.get_team_recent_matches(int(away_id))
+
+        # Embeber partidos recientes en stats para que el predictor use descanso y forma local/visitante
+        home_stats["recent_matches"] = home_recent
+        away_stats["recent_matches"] = away_recent
+
+        # Historial directo real
+        h2h_data = fapi.get_h2h(int(home_id), int(away_id))
 
         team_data = {
             "home": {"ranking": find_ranking(home), "league": league, "recent_matches": home_recent},
@@ -114,7 +122,13 @@ def post_prediction(body: dict):
         weather_info = wapi.get_weather(stadium_info["city"], match_date)
 
     # ── Predicción ───────────────────────────────────────────────────────
-    result = predict(home, away, home_stats, away_stats, weather_info, stadium_info)
+    result = predict(
+        home, away,
+        home_stats, away_stats,
+        weather_info, stadium_info,
+        h2h_data=h2h_data,
+        match_date=match_date,
+    )
 
     if team_data:
         result["team_stats"] = team_data

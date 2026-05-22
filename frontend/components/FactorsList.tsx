@@ -40,7 +40,7 @@ export default function FactorsList({ factors, homeTeam, awayTeam }: Props) {
                 <span className="text-white font-medium text-sm">{factor.name}</span>
                 <span className="text-gray-400 text-xs flex-shrink-0">Peso {factor.weight}%</span>
               </div>
-              <p className="text-gray-400 text-xs mt-0.5 truncate">{factor.detail}</p>
+              <p className="text-gray-400 text-xs mt-0.5 line-clamp-2">{factor.detail}</p>
               {factor.advantage !== "Igual" && (
                 <span className={`text-xs font-semibold mt-0.5 inline-block ${advantageColor(factor.advantage, homeTeam, awayTeam)}`}>
                   Ventaja: {factor.advantage}
