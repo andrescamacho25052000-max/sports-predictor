@@ -34,7 +34,7 @@ export default function PredictorForm() {
     setError("");
     setPrediction(null);
     try {
-      const result = await fetchPrediction(selectedMatch.home, selectedMatch.away);
+      const result = await fetchPrediction(selectedMatch, selectedLeague);
       setPrediction(result);
     } catch {
       setError("Error al obtener predicción. ¿El backend está corriendo?");
@@ -81,8 +81,10 @@ export default function PredictorForm() {
             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer hover:bg-white/15 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
             value={selectedMatch ? `${selectedMatch.home}|${selectedMatch.away}` : ""}
             onChange={(e) => {
-              const [home, away] = e.target.value.split("|");
-              setSelectedMatch({ home, away });
+              const found = matches.find(
+                (m) => `${m.home}|${m.away}` === e.target.value
+              );
+              setSelectedMatch(found || null);
               setPrediction(null);
             }}
             disabled={!selectedLeague}

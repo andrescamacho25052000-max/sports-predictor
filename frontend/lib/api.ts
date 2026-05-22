@@ -5,6 +5,9 @@ const api = axios.create({ baseURL: "http://localhost:8000" });
 export interface Match {
   home: string;
   away: string;
+  home_id?: number;
+  away_id?: number;
+  date?: string;
 }
 
 export interface Factor {
@@ -36,7 +39,13 @@ export async function fetchMatches(league: string): Promise<Match[]> {
   return data.matches;
 }
 
-export async function fetchPrediction(home: string, away: string): Promise<Prediction> {
-  const { data } = await api.post("/predict", { home_team: home, away_team: away });
+export async function fetchPrediction(match: Match, league: string): Promise<Prediction> {
+  const { data } = await api.post("/predict", {
+    home_team: match.home,
+    away_team: match.away,
+    home_id: match.home_id,
+    away_id: match.away_id,
+    league,
+  });
   return data;
 }
