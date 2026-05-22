@@ -112,7 +112,7 @@ def post_prediction(body: dict):
         weather_info = wapi.get_weather(stadium_info["city"], match_date)
 
     # ── Predicción ───────────────────────────────────────────────────────
-    result = predict(home, away, home_stats, away_stats)
+    result = predict(home, away, home_stats, away_stats, weather_info, stadium_info)
 
     if team_data:
         result["team_stats"] = team_data
