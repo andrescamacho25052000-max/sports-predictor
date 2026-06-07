@@ -1,51 +1,56 @@
 "use client";
 
-import { useState, useRef } from "react";
-import PredictorForm from "@/components/PredictorForm";
+import { useRouter } from "next/navigation";
+import PredictorForm  from "@/components/PredictorForm";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import { UpcomingMatch } from "@/lib/api";
 
-export default function Home() {
-  const [preselected, setPreselected] = useState<UpcomingMatch | null>(null);
-  const [hasUpcoming, setHasUpcoming] = useState<boolean | null>(null); // null = loading
-  const formRef = useRef<HTMLDivElement>(null);
+interface NavPayload {
+  home: string; away: string; league: string;
+  date?: string; home_id?: number; away_id?: number;
+}
 
-  function handleSelectMatch(match: UpcomingMatch) {
-    setPreselected({ ...match });
-    setTimeout(() => {
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 80);
+export default function Home() {
+  const router = useRouter();
+
+  function goToMatch(p: NavPayload) {
+    const params = new URLSearchParams({
+      home:   p.home,
+      away:   p.away,
+      league: p.league,
+      date:   p.date ?? "",
+    });
+    if (p.home_id) params.set("homeId", String(p.home_id));
+    if (p.away_id) params.set("awayId", String(p.away_id));
+    router.push(`/match?${params.toString()}`);
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 flex flex-col items-center justify-start px-4 py-12">
       <div className="w-full max-w-2xl space-y-8">
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div className="text-center space-y-3">
           <div className="text-5xl">⚽</div>
           <h1 className="text-4xl font-black text-white tracking-tight">
             Predictor Deportivo
           </h1>
           <p className="text-gray-400 text-base max-w-md mx-auto">
-            Análisis estadístico de partidos basado en forma reciente, plantel, localía y más. No adivina — calcula.
+            Análisis estadístico de partidos basado en forma reciente, plantel, localía y más.{" "}
+            <span className="text-emerald-400 font-medium">No adivina — calcula.</span>
           </p>
         </div>
 
-        {/* Próximos partidos — siempre visible (loading → sin partidos → con partidos) */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-2xl">
+        {/* ── Próximos partidos ── */}
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-xl">
           <UpcomingMatches
-            onSelectMatch={handleSelectMatch}
-            onLoaded={(count) => setHasUpcoming(count > 0)}
+            onSelectMatch={(m: UpcomingMatch) => goToMatch(m)}
           />
         </div>
 
-        {/* Predictor */}
-        <div
-          ref={formRef}
-          className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-2xl scroll-mt-8"
-        >
-          <PredictorForm preselected={preselected} />
+        {/* ── Búsqueda manual ── */}
+        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-xl">
+          <PredictorForm onAnalyze={goToMatch} />
         </div>
 
         <p className="text-center text-gray-600 text-xs">

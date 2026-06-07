@@ -1,88 +1,60 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction, League, UpcomingMatch } from "@/lib/api";
-import ProbabilityBar from "./ProbabilityBar";
-import FactorsList from "./FactorsList";
-import TeamStats from "./TeamStats";
-import MatchContext from "./MatchContext";
+import { fetchLeagues, fetchMatches, Match, League } from "@/lib/api";
 
-interface Props {
-  preselected?: UpcomingMatch | null;
+interface AnalyzePayload {
+  home: string;
+  away: string;
+  league: string;
+  date?: string;
+  home_id?: number;
+  away_id?: number;
 }
 
-export default function PredictorForm({ preselected }: Props) {
-  const [leagues, setLeagues]           = useState<League[]>([]);
-  const [selectedLeague, setSelectedLeague] = useState("");
-  const [matches, setMatches]           = useState<Match[]>([]);
-  const [selectedMatch, setSelectedMatch]   = useState<Match | null>(null);
-  const [prediction, setPrediction]     = useState<Prediction | null>(null);
-  const [loading, setLoading]           = useState(false);
-  const [loadingMatches, setLoadingMatches] = useState(false);
-  const [error, setError]               = useState("");
-  const [backendDown, setBackendDown]   = useState(false);
-  const [pendingMatch, setPendingMatch] = useState<Match | null>(null);
-  const [fetchTrigger, setFetchTrigger] = useState(0);
+interface Props {
+  onAnalyze: (payload: AnalyzePayload) => void;
+}
 
+export default function PredictorForm({ onAnalyze }: Props) {
+  const [leagues, setLeagues]               = useState<League[]>([]);
+  const [selectedLeague, setSelectedLeague] = useState("");
+  const [matches, setMatches]               = useState<Match[]>([]);
+  const [selectedMatch, setSelectedMatch]   = useState<Match | null>(null);
+  const [loadingMatches, setLoadingMatches] = useState(false);
+  const [backendDown, setBackendDown]       = useState(false);
+
+  // Cargar ligas al montar
   useEffect(() => {
     fetchLeagues()
       .then(setLeagues)
       .catch(() => setBackendDown(true));
   }, []);
 
+  // Cargar partidos al cambiar de liga
   useEffect(() => {
     if (!selectedLeague) return;
     setSelectedMatch(null);
-    setPrediction(null);
     setMatches([]);
     setLoadingMatches(true);
     fetchMatches(selectedLeague)
       .then(setMatches)
-      .catch(() => setError("Error al cargar partidos"))
+      .catch(() => {})
       .finally(() => setLoadingMatches(false));
-  }, [selectedLeague, fetchTrigger]);
+  }, [selectedLeague]);
 
-  // Cuando llega un partido pre-seleccionado desde el panel de próximos partidos
-  useEffect(() => {
-    if (!preselected) return;
-    setPendingMatch(preselected);
-    setPrediction(null);
-    setSelectedMatch(null);
-    if (selectedLeague === preselected.league) {
-      setFetchTrigger(t => t + 1); // forzar recarga de partidos
-    } else {
-      setSelectedLeague(preselected.league);
-    }
-  }, [preselected]);
-
-  // Después de cargar los partidos de la liga, seleccionar el pendiente
-  useEffect(() => {
-    if (!pendingMatch || matches.length === 0) return;
-    const found = matches.find(
-      m => m.home === pendingMatch.home && m.away === pendingMatch.away
-    );
-    if (found) {
-      setSelectedMatch(found);
-      setPendingMatch(null);
-    }
-  }, [matches, pendingMatch]);
-
-  const handleAnalyze = async () => {
+  const handleAnalyze = () => {
     if (!selectedMatch) return;
-    setLoading(true);
-    setError("");
-    setPrediction(null);
-    try {
-      const result = await fetchPrediction(selectedMatch, selectedLeague);
-      setPrediction(result);
-    } catch {
-      setError("Error al obtener predicción. ¿El backend está corriendo?");
-    } finally {
-      setLoading(false);
-    }
+    onAnalyze({
+      home:    selectedMatch.home,
+      away:    selectedMatch.away,
+      league:  selectedLeague,
+      date:    selectedMatch.date,
+      home_id: selectedMatch.home_id,
+      away_id: selectedMatch.away_id,
+    });
   };
 
-  // Agrupar ligas por región
   const leaguesByRegion = leagues.reduce<Record<string, League[]>>((acc, l) => {
     if (!acc[l.region]) acc[l.region] = [];
     acc[l.region].push(l);
@@ -102,10 +74,10 @@ export default function PredictorForm({ preselected }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Selectors */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="space-y-5">
+      <h2 className="text-lg font-bold text-white">🔍 Buscar partido manualmente</h2>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Liga */}
         <div className="space-y-2">
           <label className="text-sm text-gray-400 font-medium">Liga / Competición</label>
@@ -134,14 +106,17 @@ export default function PredictorForm({ preselected }: Props) {
             className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white appearance-none cursor-pointer hover:bg-white/15 transition focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
             value={selectedMatch ? `${selectedMatch.home}|${selectedMatch.away}` : ""}
             onChange={(e) => {
-              const found = matches.find((m) => `${m.home}|${m.away}` === e.target.value);
+              const found = matches.find(m => `${m.home}|${m.away}` === e.target.value);
               setSelectedMatch(found || null);
-              setPrediction(null);
             }}
             disabled={!selectedLeague || loadingMatches}
           >
             <option value="" className="bg-gray-900">
-              {loadingMatches ? "Cargando partidos..." : matches.length === 0 && selectedLeague ? "Sin partidos programados" : "Selecciona un partido..."}
+              {loadingMatches
+                ? "Cargando partidos..."
+                : matches.length === 0 && selectedLeague
+                ? "Sin partidos programados"
+                : "Selecciona un partido..."}
             </option>
             {matches.map((m) => (
               <option key={`${m.home}|${m.away}`} value={`${m.home}|${m.away}`} className="bg-gray-900">
@@ -154,86 +129,30 @@ export default function PredictorForm({ preselected }: Props) {
 
       {/* Partido seleccionado */}
       {selectedMatch && (
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-          <div className="flex items-center justify-between">
-            <span className="text-white font-bold text-lg">{selectedMatch.home}</span>
-            <div className="text-center">
-              <span className="text-gray-400 text-sm font-medium block">vs</span>
-              {selectedMatch.date && (
-                <span className="text-gray-500 text-xs">
-                  {new Date(selectedMatch.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
-                </span>
-              )}
-            </div>
-            <span className="text-white font-bold text-lg">{selectedMatch.away}</span>
+        <div className="bg-white/5 rounded-2xl p-4 border border-white/10 flex items-center justify-between">
+          <span className="text-white font-bold">{selectedMatch.home}</span>
+          <div className="text-center">
+            <span className="text-gray-500 text-xs font-bold block">vs</span>
+            {selectedMatch.date && (
+              <span className="text-gray-600 text-xs">
+                {new Date(selectedMatch.date).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+              </span>
+            )}
           </div>
+          <span className="text-white font-bold">{selectedMatch.away}</span>
         </div>
       )}
 
-      {/* Botón analizar */}
       <button
         onClick={handleAnalyze}
-        disabled={!selectedMatch || loading}
-        className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all duration-200 text-lg shadow-lg shadow-emerald-500/20 active:scale-95"
+        disabled={!selectedMatch}
+        className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-all duration-200 text-base shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
       >
-        {loading ? (
-          <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            Analizando...
-          </span>
-        ) : "Analizar"}
+        Ver análisis
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+        </svg>
       </button>
-
-      {/* Error */}
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-red-400 text-sm text-center">
-          {error}
-        </div>
-      )}
-
-      {/* Resultado */}
-      {prediction && (
-        <div className="space-y-6">
-          <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-6">
-            <ProbabilityBar
-              homeTeam={prediction.home_team}
-              awayTeam={prediction.away_team}
-              homeWin={prediction.probabilities.home_win}
-              draw={prediction.probabilities.draw}
-              awayWin={prediction.probabilities.away_win}
-            />
-            <div className="border-t border-white/10 pt-6">
-              <FactorsList
-                factors={prediction.factors}
-                homeTeam={prediction.home_team}
-                awayTeam={prediction.away_team}
-              />
-            </div>
-          </div>
-
-          <p className="text-center text-gray-500 text-xs">
-            Modelo: {prediction.model} · Los porcentajes son probabilidades estimadas, no garantías.
-          </p>
-
-          {prediction.team_stats && (
-            <TeamStats
-              home={prediction.team_stats.home}
-              away={prediction.team_stats.away}
-              homeTeam={prediction.home_team}
-              awayTeam={prediction.away_team}
-            />
-          )}
-
-          <MatchContext
-            stadium={prediction.stadium}
-            weather={prediction.weather}
-            injuries={prediction.injuries}
-          />
-        </div>
-      )}
     </div>
   );
 }
