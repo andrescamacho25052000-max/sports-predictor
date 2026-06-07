@@ -40,6 +40,18 @@ def get_matches(league: str):
     raise HTTPException(status_code=404, detail=f"Liga '{league}' no encontrada")
 
 
+@app.get("/upcoming")
+def get_upcoming():
+    """Próximos partidos de todas las ligas, ordenados por fecha."""
+    all_matches = []
+    for league in fapi.get_leagues():
+        matches = fapi.get_matches(league)
+        for m in matches[:3]:          # máximo 3 partidos por liga
+            all_matches.append({**m, "league": league})
+    all_matches.sort(key=lambda x: x.get("date") or "")
+    return {"matches": all_matches[:18]}
+
+
 @app.get("/teams")
 def get_teams():
     return {"teams": list(TEAMS.keys())}

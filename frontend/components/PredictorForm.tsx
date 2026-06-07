@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction, League } from "@/lib/api";
+import { fetchLeagues, fetchMatches, fetchPrediction, Match, Prediction, League, UpcomingMatch } from "@/lib/api";
 import ProbabilityBar from "./ProbabilityBar";
 import FactorsList from "./FactorsList";
 import TeamStats from "./TeamStats";
 import MatchContext from "./MatchContext";
 
-export default function PredictorForm() {
+interface Props {
+  preselected?: UpcomingMatch | null;
+}
+
+export default function PredictorForm({ preselected }: Props) {
   const [leagues, setLeagues]           = useState<League[]>([]);
   const [selectedLeague, setSelectedLeague] = useState("");
   const [matches, setMatches]           = useState<Match[]>([]);
@@ -17,6 +21,8 @@ export default function PredictorForm() {
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [error, setError]               = useState("");
   const [backendDown, setBackendDown]   = useState(false);
+  const [pendingMatch, setPendingMatch] = useState<Match | null>(null);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
 
   useEffect(() => {
     fetchLeagues()
@@ -34,7 +40,32 @@ export default function PredictorForm() {
       .then(setMatches)
       .catch(() => setError("Error al cargar partidos"))
       .finally(() => setLoadingMatches(false));
-  }, [selectedLeague]);
+  }, [selectedLeague, fetchTrigger]);
+
+  // Cuando llega un partido pre-seleccionado desde el panel de próximos partidos
+  useEffect(() => {
+    if (!preselected) return;
+    setPendingMatch(preselected);
+    setPrediction(null);
+    setSelectedMatch(null);
+    if (selectedLeague === preselected.league) {
+      setFetchTrigger(t => t + 1); // forzar recarga de partidos
+    } else {
+      setSelectedLeague(preselected.league);
+    }
+  }, [preselected]);
+
+  // Después de cargar los partidos de la liga, seleccionar el pendiente
+  useEffect(() => {
+    if (!pendingMatch || matches.length === 0) return;
+    const found = matches.find(
+      m => m.home === pendingMatch.home && m.away === pendingMatch.away
+    );
+    if (found) {
+      setSelectedMatch(found);
+      setPendingMatch(null);
+    }
+  }, [matches, pendingMatch]);
 
   const handleAnalyze = async () => {
     if (!selectedMatch) return;

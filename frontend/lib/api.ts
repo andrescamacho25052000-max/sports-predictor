@@ -86,9 +86,18 @@ export interface League {
   region: string;
 }
 
+export interface UpcomingMatch extends Match {
+  league: string;
+}
+
 export async function fetchLeagues(): Promise<League[]> {
   const { data } = await api.get("/leagues");
   return data.leagues;
+}
+
+export async function fetchUpcoming(): Promise<UpcomingMatch[]> {
+  const { data } = await api.get("/upcoming");
+  return data.matches;
 }
 
 export async function fetchMatches(league: string): Promise<Match[]> {
