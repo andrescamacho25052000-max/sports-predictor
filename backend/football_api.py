@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -221,6 +222,51 @@ def get_team_recent_matches(team_id: int, limit: int = 5) -> list:
         })
 
     return result
+
+
+def get_match_result(home_id: int, away_id: int, match_date: str) -> dict | None:
+    """
+    Busca el resultado real de un partido ya jugado.
+    Revisa los últimos 20 partidos del equipo local filtrando por rival y fecha
+    (tolerancia ±3 días por posibles aplazamientos).
+    Devuelve {"home_goals": int, "away_goals": int, "winner": "Local"|"Empate"|"Visitante"}
+    o None si aún no está disponible.
+    """
+    data = _get(f"/teams/{home_id}/matches?status=FINISHED&limit=20")
+    if not data or "matches" not in data:
+        return None
+
+    try:
+        target = datetime.strptime(match_date[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+    for m in data["matches"]:
+        h_id = m.get("homeTeam", {}).get("id")
+        a_id = m.get("awayTeam", {}).get("id")
+
+        if {h_id, a_id} != {home_id, away_id}:
+            continue
+
+        m_date_str = (m.get("utcDate") or "")[:10]
+        try:
+            m_date = datetime.strptime(m_date_str, "%Y-%m-%d").date()
+            if abs((m_date - target).days) > 3:
+                continue
+        except ValueError:
+            continue
+
+        sc = m.get("score", {}).get("fullTime", {})
+        h  = sc.get("home") or 0
+        a  = sc.get("away") or 0
+
+        if h > a:    winner = "Local"
+        elif h == a: winner = "Empate"
+        else:        winner = "Visitante"
+
+        return {"home_goals": h, "away_goals": a, "winner": winner}
+
+    return None
 
 
 def get_h2h(team_id_1: int, team_id_2: int) -> dict | None:
