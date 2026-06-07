@@ -1,33 +1,61 @@
 """
 ml/collect.py — Descarga datos históricos de football-data.org.
 
-Guarda los resultados en ml/data/{LIGA}_{TEMPORADA}.json para no
-repetir las descargas. Respeta el límite de 10 req/min con pausa
-de 7 segundos entre llamadas.
+Maneja 429 automáticamente: lee el tiempo de espera del mensaje
+y reintenta hasta 4 veces antes de rendirse.
 
 Uso:
     cd backend
     python -m ml.collect
 """
-import sys, os, json, time
+import sys, os, json, time, re
+import requests
+from dotenv import load_dotenv
 
-# Asegurar que backend/ está en el path
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
 
-from football_api import _get   # reutiliza clave, caché y timeouts
-
+API_KEY  = os.getenv("FOOTBALL_API_KEY")
+BASE_URL = "https://api.football-data.org/v4"
+HEADERS  = {"X-Auth-Token": API_KEY}
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
-# Solo ligas disponibles en el plan gratuito para historiales de equipo
-LEAGUES = {
-    "PL":  "Premier League",
-    "PD":  "La Liga",
-    "BL1": "Bundesliga",
-    "SA":  "Serie A",
-    "FL1": "Ligue 1",
-}
-# Últimas 3 temporadas completas
-SEASONS = [2022, 2023, 2024]
+LEAGUES  = {"PL": "Premier League", "PD": "La Liga",
+            "BL1": "Bundesliga", "SA": "Serie A", "FL1": "Ligue 1"}
+SEASONS  = [2022, 2023, 2024]
+
+
+def _fetch(path: str, max_retries: int = 4) -> dict | None:
+    url = f"{BASE_URL}{path}"
+    for attempt in range(max_retries):
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=15)
+
+            if r.status_code == 200:
+                return r.json()
+
+            if r.status_code == 429:
+                # Extraer segundos del mensaje, ej: "Wait 37 seconds."
+                msg = ""
+                try:
+                    msg = r.json().get("message", "")
+                except Exception:
+                    pass
+                nums = re.findall(r"\d+", msg)
+                wait = int(nums[0]) + 5 if nums else 70
+                print(f"\n    ⏳ Rate limit — esperando {wait}s y reintentando "
+                      f"({attempt+1}/{max_retries})…", flush=True)
+                time.sleep(wait)
+                continue
+
+            print(f"\n    Error HTTP {r.status_code}")
+            return None
+
+        except Exception as e:
+            print(f"\n    Excepción: {e}")
+            if attempt < max_retries - 1:
+                time.sleep(15)
+    return None
 
 
 def collect_all(force: bool = False) -> int:
@@ -40,30 +68,34 @@ def collect_all(force: bool = False) -> int:
 
             if os.path.exists(path) and not force:
                 with open(path, encoding="utf-8") as f:
-                    matches = json.load(f)
-                n = len([m for m in matches if m.get("status") == "FINISHED"])
+                    raw = json.load(f)
+                n = len([m for m in raw if m.get("status") == "FINISHED"])
                 print(f"  [caché] {name} {season}-{season+1}: {n} partidos")
                 total += n
                 continue
 
-            print(f"  ↓ Descargando {name} temporada {season}-{season+1}…", end=" ", flush=True)
-            data = _get(f"/competitions/{code}/matches?season={season}")
+            print(f"  ↓  {name} {season}-{season+1}…", end=" ", flush=True)
+            data = _fetch(f"/competitions/{code}/matches?season={season}")
 
             if not data or "matches" not in data:
-                print("sin datos")
-                time.sleep(7)
+                print("sin datos — continuando")
+                time.sleep(8)
                 continue
 
-            matches = data["matches"]
+            raw = data["matches"]
             with open(path, "w", encoding="utf-8") as f:
-                json.dump(matches, f, ensure_ascii=False)
+                json.dump(raw, f, ensure_ascii=False)
 
-            finished = len([m for m in matches if m.get("status") == "FINISHED"])
-            print(f"{finished} partidos guardados")
+            finished = len([m for m in raw if m.get("status") == "FINISHED"])
+            print(f"{finished} partidos guardados ✓")
             total += finished
-            time.sleep(7)   # respeta 10 req/min
 
-    print(f"\n✓ Total: {total} partidos disponibles para entrenamiento")
+            # Pausa larga entre llamadas para no agotar las 10 req/min
+            if not (code == list(LEAGUES)[-1] and season == SEASONS[-1]):
+                print(f"     (pausa 12s…)", end="\r", flush=True)
+                time.sleep(12)
+
+    print(f"\n✓ Total: {total} partidos descargados")
     return total
 
 
