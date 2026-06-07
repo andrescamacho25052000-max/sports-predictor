@@ -339,7 +339,7 @@ def predict(
         "detail":    cond_detail,
     })
 
-    # ── Normalizar a probabilidades ───────────────────────────────
+    # ── Probabilidades por reglas (siempre se calculan como fallback) ──
     total = home_score + away_score
     if total <= 0:
         raw_home = raw_away = 0.5
@@ -347,12 +347,56 @@ def predict(
         raw_home = home_score / total
         raw_away = away_score / total
 
-    diff      = abs(raw_home - raw_away)
-    draw_prob = max(0.10, 0.30 - diff * 0.8)
-    remaining = 1 - draw_prob
-    denom     = (raw_home + raw_away) or 1
-    home_prob = raw_home * remaining / denom
-    away_prob = raw_away * remaining / denom
+    diff          = abs(raw_home - raw_away)
+    draw_prob_rb  = max(0.10, 0.30 - diff * 0.8)
+    remaining_rb  = 1 - draw_prob_rb
+    denom_rb      = (raw_home + raw_away) or 1
+    home_prob_rb  = raw_home * remaining_rb / denom_rb
+    away_prob_rb  = raw_away * remaining_rb / denom_rb
+
+    # ── Intentar modelo XGBoost ───────────────────────────────────
+    use_ml    = False
+    model_lbl = "rule-based v2"
+
+    if home_stats and away_stats:          # solo si hay datos reales
+        try:
+            from ml_predictor import predict_ml
+            ml = predict_ml(home, away, h2h_data)
+            if ml:
+                # Base ML + ajuste contextual pequeño (lesiones, descanso)
+                hp = ml["home_win"] / 100
+                dp = ml["draw"]    / 100
+                ap = ml["away_win"] / 100
+
+                # Penalización por lesiones (no está en el histórico de entrenamiento)
+                home_inj = _injury_penalty(home) * WEIGHTS["injuries"]
+                away_inj = _injury_penalty(away) * WEIGHTS["injuries"]
+                pen_total = home_inj + away_inj
+                if pen_total > 0:
+                    shift = (away_inj - home_inj) / (pen_total * 25)
+                    hp += shift
+                    ap -= shift
+
+                # Renormalizar y acotar
+                t = hp + dp + ap
+                hp = max(0.05, hp / t)
+                dp = max(0.05, dp / t)
+                ap = max(0.05, ap / t)
+                # segunda normalización
+                t = hp + dp + ap
+                home_prob = hp / t
+                draw_prob = dp / t
+                away_prob = ap / t
+
+                use_ml    = True
+                model_lbl = "XGBoost v1"
+        except Exception:
+            pass
+
+    if not use_ml:
+        home_prob = home_prob_rb
+        draw_prob = draw_prob_rb
+        away_prob = away_prob_rb
 
     return {
         "home_team": home_name,
@@ -363,7 +407,7 @@ def predict(
             "away_win": round(away_prob * 100, 1),
         },
         "factors": factors,
-        "model":   "rule-based v2",
+        "model":   model_lbl,
     }
 
 
