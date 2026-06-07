@@ -42,12 +42,28 @@ def get_matches(league: str):
 
 @app.get("/upcoming")
 def get_upcoming():
-    """Próximos partidos de todas las ligas, ordenados por fecha."""
+    """Próximos partidos. Consulta las ligas de mayor a menor probabilidad
+    de tener partidos activos y para al llegar a 18 resultados."""
+    import time
+
+    # Ligas con mayor actividad primero (reduce llamadas innecesarias)
+    priority = [
+        "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
+        "Champions League", "Brasileirao Serie A", "Copa Libertadores",
+        "Eredivisie", "Primeira Liga", "Championship",
+        "Eurocopa", "Mundial FIFA",
+    ]
+
     all_matches = []
-    for league in fapi.get_leagues():
+    for league in priority:
+        if len(all_matches) >= 18:
+            break
         matches = fapi.get_matches(league)
-        for m in matches[:3]:          # máximo 3 partidos por liga
+        for m in matches[:3]:
             all_matches.append({**m, "league": league})
+        if not matches:
+            time.sleep(0.3)   # pausa breve si no había caché para este llamado
+
     all_matches.sort(key=lambda x: x.get("date") or "")
     return {"matches": all_matches[:18]}
 

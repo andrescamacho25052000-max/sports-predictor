@@ -7,10 +7,11 @@ import { UpcomingMatch } from "@/lib/api";
 
 export default function Home() {
   const [preselected, setPreselected] = useState<UpcomingMatch | null>(null);
+  const [hasUpcoming, setHasUpcoming] = useState<boolean | null>(null); // null = loading
   const formRef = useRef<HTMLDivElement>(null);
 
   function handleSelectMatch(match: UpcomingMatch) {
-    setPreselected({ ...match }); // new object reference so useEffect fires even for same match
+    setPreselected({ ...match });
     setTimeout(() => {
       formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 80);
@@ -31,13 +32,19 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Próximos partidos */}
+        {/* Próximos partidos — siempre visible (loading → sin partidos → con partidos) */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-2xl">
-          <UpcomingMatches onSelectMatch={handleSelectMatch} />
+          <UpcomingMatches
+            onSelectMatch={handleSelectMatch}
+            onLoaded={(count) => setHasUpcoming(count > 0)}
+          />
         </div>
 
         {/* Predictor */}
-        <div ref={formRef} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-2xl scroll-mt-8">
+        <div
+          ref={formRef}
+          className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-2xl scroll-mt-8"
+        >
           <PredictorForm preselected={preselected} />
         </div>
 
