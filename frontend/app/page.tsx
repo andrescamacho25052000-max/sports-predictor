@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import PredictorForm  from "@/components/PredictorForm";
+import TeamSearch      from "@/components/TeamSearch";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import { UpcomingMatch } from "@/lib/api";
 
@@ -12,14 +13,10 @@ interface NavPayload {
 
 export default function Home() {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
 
   function goToMatch(p: NavPayload) {
-    const params = new URLSearchParams({
-      home:   p.home,
-      away:   p.away,
-      league: p.league,
-      date:   p.date ?? "",
-    });
+    const params = new URLSearchParams({ home: p.home, away: p.away, league: p.league, date: p.date ?? "" });
     if (p.home_id) params.set("homeId", String(p.home_id));
     if (p.away_id) params.set("awayId", String(p.away_id));
     router.push(`/match?${params.toString()}`);
@@ -32,26 +29,27 @@ export default function Home() {
         {/* ── Header ── */}
         <div className="text-center space-y-3">
           <div className="text-5xl">⚽</div>
-          <h1 className="text-4xl font-black text-white tracking-tight">
-            Predictor Deportivo
-          </h1>
+          <h1 className="text-4xl font-black text-white tracking-tight">Predictor Deportivo</h1>
           <p className="text-gray-400 text-base max-w-md mx-auto">
-            Análisis estadístico de partidos basado en forma reciente, plantel, localía y más.{" "}
+            Análisis estadístico basado en forma, plantel, localía y más.{" "}
             <span className="text-emerald-400 font-medium">No adivina — calcula.</span>
           </p>
         </div>
 
-        {/* ── Próximos partidos ── */}
+        {/* ── Buscador (siempre arriba) ── */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-xl">
-          <UpcomingMatches
+          <TeamSearch
             onSelectMatch={(m: UpcomingMatch) => goToMatch(m)}
+            onQueryChange={setSearchQuery}
           />
         </div>
 
-        {/* ── Búsqueda manual ── */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-xl">
-          <PredictorForm onAnalyze={goToMatch} />
-        </div>
+        {/* ── Próximos partidos (solo cuando no hay búsqueda activa) ── */}
+        {searchQuery.trim().length < 2 && (
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 shadow-xl">
+            <UpcomingMatches onSelectMatch={(m: UpcomingMatch) => goToMatch(m)} />
+          </div>
+        )}
 
         <p className="text-center text-gray-600 text-xs">
           Incluso los mejores modelos rara vez superan el 65% de precisión en fútbol. El deporte tiene mucho ruido.

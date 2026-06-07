@@ -40,6 +40,26 @@ def get_matches(league: str):
     raise HTTPException(status_code=404, detail=f"Liga '{league}' no encontrada")
 
 
+@app.get("/search")
+def search_matches(q: str = ""):
+    """Busca partidos próximos donde juegue el equipo indicado."""
+    q_clean = q.lower().strip()
+    if len(q_clean) < 2:
+        return {"matches": []}
+
+    results = []
+    for league in fapi.get_leagues():
+        matches = fapi.get_matches(league)
+        for m in matches:
+            home = (m.get("home") or "").lower()
+            away = (m.get("away") or "").lower()
+            if q_clean in home or q_clean in away:
+                results.append({**m, "league": league})
+
+    results.sort(key=lambda x: x.get("date") or "")
+    return {"matches": results[:20]}
+
+
 @app.get("/upcoming")
 def get_upcoming():
     """Próximos partidos. Consulta las ligas de mayor a menor probabilidad
