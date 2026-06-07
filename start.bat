@@ -18,5 +18,12 @@ cd ..\frontend
 start "Frontend Next.js" cmd /k "npm run dev"
 
 echo.
-echo Listo! Abre http://localhost:3000 en tu navegador.
+echo Esperando que el frontend arranque...
+timeout /t 5 /nobreak > nul
+
+echo Abriendo el navegador...
+start "" "http://localhost:3000"
+
+echo.
+echo Listo! La pagina se abrio automaticamente.
 pause
