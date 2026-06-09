@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const api = axios.create({ baseURL: "http://localhost:8000" });
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const api = axios.create({ baseURL: API_URL });
 
 export interface Match {
   home: string;
@@ -8,6 +9,8 @@ export interface Match {
   home_id?: number;
   away_id?: number;
   date?: string;
+  home_crest?: string;
+  away_crest?: string;
 }
 
 export interface Factor {
@@ -59,6 +62,45 @@ export interface Weather {
   impact: string;
 }
 
+export interface PoissonData {
+  expected_goals:   { home: number; away: number; total: number };
+  result_1x2:       { home_win: number; draw: number; away_win: number };
+  over_under:       Record<string, number>;
+  btts:             { yes: number; no: number };
+  exact_score:      { score: string; home: number; away: number; prob: number }[];
+  half_time:        { home_win: number; draw: number; away_win: number };
+  home_goals:       Record<string, number>;
+  away_goals:       Record<string, number>;
+  home_clean_sheet: { yes: number; no: number };
+  away_clean_sheet: { yes: number; no: number };
+}
+
+export interface CornerCardsData {
+  data_source: "statsbomb" | "global_average";
+  corners: {
+    expected_home: number;
+    expected_away: number;
+    expected_total: number;
+    over_under: Record<string, number>;
+    home_more: number;
+    away_more: number;
+    equal: number;
+  };
+  yellow_cards: {
+    expected_home: number;
+    expected_away: number;
+    expected_total: number;
+    over_under: Record<string, number>;
+    home_dist: Record<string, number>;
+    away_dist: Record<string, number>;
+  };
+  fouls: {
+    expected_home: number;
+    expected_away: number;
+    expected_total: number;
+  };
+}
+
 export interface Prediction {
   home_team: string;
   away_team: string;
@@ -69,6 +111,8 @@ export interface Prediction {
   };
   factors: Factor[];
   model: string;
+  poisson?: PoissonData;
+  corners_cards?: CornerCardsData;
   team_stats?: {
     home: TeamData;
     away: TeamData;
@@ -95,9 +139,14 @@ export async function fetchLeagues(): Promise<League[]> {
   return data.leagues;
 }
 
-export async function fetchUpcoming(): Promise<UpcomingMatch[]> {
+export interface UpcomingResponse {
+  matches: UpcomingMatch[];
+  betplay_quota: { exhausted: boolean; remaining: number | null };
+}
+
+export async function fetchUpcoming(): Promise<UpcomingResponse> {
   const { data } = await api.get("/upcoming");
-  return data.matches;
+  return data;
 }
 
 export async function fetchMatches(league: string): Promise<Match[]> {

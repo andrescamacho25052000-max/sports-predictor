@@ -18,13 +18,16 @@ DATA_DIR   = os.path.join(os.path.dirname(__file__), "data")
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "model.pkl")
 
 FEATURES = [
-    "home_wins_5",    "home_draws_5",    "home_losses_5",
-    "home_gf_5",      "home_ga_5",
-    "away_wins_5",    "away_draws_5",    "away_losses_5",
-    "away_gf_5",      "away_ga_5",
-    "home_home_wins", "home_home_draws", "home_home_losses",
-    "away_away_wins", "away_away_draws", "away_away_losses",
-    "h2h_home_ratio", "h2h_draw_ratio",
+    "home_wins_5",       "home_draws_5",       "home_losses_5",
+    "home_gf_5",         "home_ga_5",
+    "away_wins_5",       "away_draws_5",       "away_losses_5",
+    "away_gf_5",         "away_ga_5",
+    "home_home_wins",    "home_home_draws",    "home_home_losses",
+    "away_away_wins",    "away_away_draws",    "away_away_losses",
+    "h2h_home_ratio",    "h2h_draw_ratio",
+    # v2: Elo + points per game
+    "elo_diff",          "elo_home_expected",
+    "home_pts_per_game", "away_pts_per_game",
 ]
 LABELS = {0: "Local", 1: "Empate", 2: "Visitante"}
 
@@ -89,7 +92,7 @@ def train() -> XGBClassifier:
     print("  Importancia de features (aprendida):")
     importances = sorted(zip(FEATURES, model.feature_importances_), key=lambda x: -x[1])
     for feat, imp in importances:
-        bar = "█" * int(imp * 60)
+        bar = "#" * int(imp * 60)
         print(f"    {feat:<25} {bar} {imp:.3f}")
 
     # ── Guardar ───────────────────────────────────────────────────
@@ -101,7 +104,7 @@ def train() -> XGBClassifier:
         "cv_mean":  round(float(cv_scores.mean()), 4),
     }
     joblib.dump(meta, MODEL_PATH)
-    print(f"\n  ✓ Modelo guardado en: {MODEL_PATH}")
+    print(f"\n  OK Modelo guardado en: {MODEL_PATH}")
     return model
 
 

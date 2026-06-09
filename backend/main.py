@@ -2,15 +2,72 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from predictor import predict
 from mock_data import LEAGUES, TEAMS
+from poisson_predictor import predict_poisson
+from corners_cards_predictor import predict_corners_cards
 import football_api as fapi
 import api_sports as asports
 import weather_api as wapi
+import supabase_client as sbc
+import result_checker
+import asyncio
 
 app = FastAPI(title="Sports Predictor API", version="3.1.0")
 
+
+async def _result_checker_loop():
+    """Revisa resultados pendientes cada hora en segundo plano."""
+    await asyncio.sleep(30)  # esperar 30s al arrancar antes del primer check
+    while True:
+        try:
+            n = await asyncio.get_event_loop().run_in_executor(
+                None, result_checker.check_and_update_pending
+            )
+            if n:
+                print(f"[Scheduler] {n} resultado(s) actualizados automaticamente")
+        except Exception as e:
+            print(f"[Scheduler] Error en result_checker: {e}")
+        await asyncio.sleep(3600)  # cada hora
+
+
+@app.on_event("startup")
+async def warm_cache():
+    """Pre-calienta el caché de partidos al arrancar para que la primera
+    visita sea instantánea en vez de esperar todas las llamadas a la API."""
+    import asyncio
+    from concurrent.futures import ThreadPoolExecutor
+
+    priority = [
+        "Mundial FIFA",
+        "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
+        "Champions League", "Brasileirao Serie A", "Copa Libertadores",
+    ]
+
+    def fetch_all():
+        with ThreadPoolExecutor(max_workers=9) as ex:
+            list(ex.map(fapi.get_matches, priority))
+        print("[Cache] Partidos pre-cargados al arrancar")
+
+    # Ejecutar en background para no bloquear el arranque
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, fetch_all)
+
+    # Arrancar el checker automático de resultados
+    asyncio.create_task(_result_checker_loop())
+    print("[Scheduler] Result checker iniciado — revisa resultados cada hora")
+
+import os
+
+# En producción, FRONTEND_URL viene de la variable de entorno de Railway
+# Ejemplo: https://sports-predictor.vercel.app
+_frontend_url = os.getenv("FRONTEND_URL", "")
+_allowed_origins = ["http://localhost:3000"]
+if _frontend_url:
+    _allowed_origins.append(_frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_allowed_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # cualquier deploy de Vercel
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -62,35 +119,66 @@ def search_matches(q: str = ""):
 
 @app.get("/upcoming")
 def get_upcoming():
-    """Próximos partidos. Consulta las ligas de mayor a menor probabilidad
-    de tener partidos activos y para al llegar a 18 resultados."""
-    import time
+    """Próximos partidos. Llama a todas las fuentes EN PARALELO para máxima velocidad."""
+    from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    # Ligas con mayor actividad primero (reduce llamadas innecesarias)
     priority = [
+        "Mundial FIFA",
         "Premier League", "La Liga", "Bundesliga", "Serie A", "Ligue 1",
         "Champions League", "Brasileirao Serie A", "Copa Libertadores",
-        "Eredivisie", "Primeira Liga", "Championship",
-        "Eurocopa", "Mundial FIFA",
+        "Eredivisie", "Primeira Liga", "Championship", "Eurocopa",
     ]
 
-    all_matches = []
-    for league in priority:
-        if len(all_matches) >= 18:
-            break
+    def fetch_fapi(league: str):
         matches = fapi.get_matches(league)
-        for m in matches[:3]:
-            all_matches.append({**m, "league": league})
-        if not matches:
-            time.sleep(0.3)   # pausa breve si no había caché para este llamado
+        return [(m, league) for m in matches[:4]]
 
-    all_matches.sort(key=lambda x: x.get("date") or "")
-    return {"matches": all_matches[:18]}
+    def fetch_betplay():
+        matches = asports.get_betplay_fixtures(next_n=8)
+        return [(m, "Liga BetPlay") for m in matches]
+
+    all_matches = []
+
+    with ThreadPoolExecutor(max_workers=14) as executor:
+        futures = {executor.submit(fetch_fapi, league): league for league in priority}
+        futures[executor.submit(fetch_betplay)] = "Liga BetPlay"
+
+        for future in as_completed(futures):
+            try:
+                all_matches.extend(future.result())
+            except Exception:
+                pass
+
+    all_matches.sort(key=lambda x: x[0].get("date") or "")
+    result = [{**m, "league": league} for m, league in all_matches]
+
+    # Incluir estado de cuota de API-Sports para que el frontend pueda avisar al usuario
+    quota = asports.quota_status()
+    return {
+        "matches": result[:32],
+        "betplay_quota": {
+            "exhausted":  quota["exhausted"],
+            "remaining":  quota["remaining"],
+        },
+    }
 
 
 @app.get("/teams")
 def get_teams():
     return {"teams": list(TEAMS.keys())}
+
+
+@app.get("/teams/search")
+def search_teams(q: str = ""):
+    """
+    Busca equipos por nombre en el índice local (sin llamadas a API externa).
+    Devuelve [{"id": int, "name": str}, ...].
+    Usado por el frontend para resolver team_id cuando el usuario escribe manualmente.
+    """
+    if len(q.strip()) < 2:
+        return {"teams": []}
+    results = fapi.search_teams(q.strip())
+    return {"teams": results}
 
 
 @app.post("/predict")
@@ -130,9 +218,12 @@ def post_prediction(body: dict):
         home_recent = fapi.get_team_recent_matches(int(home_id))
         away_recent = fapi.get_team_recent_matches(int(away_id))
 
-        # Embeber partidos recientes en stats para que el predictor use descanso y forma local/visitante
+        # Embeber partidos recientes y team_id en stats
+        # (team_id lo usa ml_predictor para buscar el Elo en tiempo real)
         home_stats["recent_matches"] = home_recent
         away_stats["recent_matches"] = away_recent
+        home_stats["team_id"] = int(home_id)
+        away_stats["team_id"] = int(away_id)
 
         # Historial directo real
         h2h_data = fapi.get_h2h(int(home_id), int(away_id))
@@ -181,6 +272,14 @@ def post_prediction(body: dict):
     if team_data:
         result["team_stats"] = team_data
 
+    # ── Mercados Poisson (siempre se calculan) ───────────────────────────────
+    poisson_home = home_stats or {"goals_scored_last5": 7, "goals_conceded_last5": 6}
+    poisson_away = away_stats or {"goals_scored_last5": 6, "goals_conceded_last5": 7}
+    result["poisson"] = predict_poisson(poisson_home, poisson_away)
+
+    # ── Córners y tarjetas (StatsBomb) ───────────────────────────────────────
+    result["corners_cards"] = predict_corners_cards(home, away)
+
     result["injuries"] = {
         "home": {"team": home, "players": home_injuries},
         "away": {"team": away, "players": away_injuries},
@@ -192,6 +291,148 @@ def post_prediction(body: dict):
     if weather_info:
         result["weather"] = weather_info
 
+    # ── Guardar predicción en Supabase ───────────────────────────────────────
+    try:
+        probs = result.get("probabilities", {})
+        ph = probs.get("home_win", 0)
+        pd = probs.get("draw", 0)
+        pa = probs.get("away_win", 0)
+
+        # Determinar ganador predicho
+        best_prob = max(ph, pd, pa)
+        if best_prob == ph:
+            pred_winner = "Local"
+            confidence  = ph
+        elif best_prob == pd:
+            pred_winner = "Empate"
+            confidence  = pd
+        else:
+            pred_winner = "Visitante"
+            confidence  = pa
+
+        # Capturar features del modelo para reentrenamiento futuro
+        features_snapshot = None
+        if home_stats and away_stats:
+            features_snapshot = {
+                "home_wins_last5":    home_stats.get("wins_last5", 0),
+                "home_draws_last5":   home_stats.get("draws_last5", 0),
+                "home_losses_last5":  home_stats.get("losses_last5", 0),
+                "home_goals_scored":  home_stats.get("goals_scored_last5", 0),
+                "home_goals_conceded":home_stats.get("goals_conceded_last5", 0),
+                "home_possession":    home_stats.get("possession_avg", 50),
+                "home_shots":         home_stats.get("shots_on_target_avg", 0),
+                "home_injured":       home_stats.get("injured_players", 0),
+                "away_wins_last5":    away_stats.get("wins_last5", 0),
+                "away_draws_last5":   away_stats.get("draws_last5", 0),
+                "away_losses_last5":  away_stats.get("losses_last5", 0),
+                "away_goals_scored":  away_stats.get("goals_scored_last5", 0),
+                "away_goals_conceded":away_stats.get("goals_conceded_last5", 0),
+                "away_possession":    away_stats.get("possession_avg", 50),
+                "away_shots":         away_stats.get("shots_on_target_avg", 0),
+                "away_injured":       away_stats.get("injured_players", 0),
+                "h2h_home_wins":      h2h_data.get("wins",   0) if h2h_data else 0,
+                "h2h_draws":          h2h_data.get("draws",  0) if h2h_data else 0,
+                "h2h_away_wins":      h2h_data.get("losses", 0) if h2h_data else 0,
+                "home_elo":           home_stats.get("elo", 1500),
+                "away_elo":           away_stats.get("elo", 1500),
+            }
+
+        pred_record = {
+            "home_team":      home,
+            "away_team":      away,
+            "league":         league or None,
+            "match_date":     match_date or None,
+            "home_crest":     body.get("home_crest") or None,
+            "away_crest":     body.get("away_crest") or None,
+            "prob_home_win":  ph,
+            "prob_draw":      pd,
+            "prob_away_win":  pa,
+            "pred_winner":    pred_winner,
+            "confidence":     confidence,
+            "model_used":     result.get("model", "hybrid"),
+            "xg_home":        result.get("poisson", {}).get("xg_home"),
+            "xg_away":        result.get("poisson", {}).get("xg_away"),
+            # IDs para búsqueda automática de resultados
+            "fd_home_id":     int(home_id) if home_id else None,
+            "fd_away_id":     int(away_id) if away_id else None,
+            # Features para reentrenamiento incremental
+            "features_json":  features_snapshot,
+            "model_version":  result.get("model", "rule-based"),
+        }
+        saved = sbc.save_prediction(pred_record)
+        if saved:
+            result["prediction_id"] = saved["id"]
+    except Exception as e:
+        print(f"[Supabase] No se pudo guardar prediccion: {e}")
+
+    return result
+
+
+@app.get("/predictions")
+def list_predictions(limit: int = 50, offset: int = 0):
+    """Historial de todas las predicciones guardadas en Supabase."""
+    rows = sbc.get_predictions(limit=limit, offset=offset)
+    return {"predictions": rows, "count": len(rows)}
+
+
+@app.get("/predictions/stats")
+def prediction_stats():
+    """Estadísticas globales de precisión del modelo."""
+    return sbc.get_stats()
+
+
+@app.post("/predictions/check-results")
+async def trigger_result_check():
+    """Fuerza una búsqueda inmediata de resultados pendientes (sin esperar la hora)."""
+    n = await asyncio.get_event_loop().run_in_executor(
+        None, result_checker.check_and_update_pending
+    )
+    return {"updated": n, "message": f"{n} resultado(s) actualizados"}
+
+
+@app.post("/predictions/retrain")
+async def trigger_retrain(body: dict = {}):
+    """Dispara reentrenamiento incremental manual del modelo."""
+    force = body.get("force", False)
+    def _retrain():
+        import sys, os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ml"))
+        from ml.incremental_trainer import run_incremental_training
+        return run_incremental_training(force=force)
+    result = await asyncio.get_event_loop().run_in_executor(None, _retrain)
+    return result
+
+
+@app.get("/predictions/model-evolution")
+def model_evolution():
+    """Historial de evolución del modelo (accuracy por cada reentrenamiento)."""
+    from pathlib import Path
+    import json
+    meta_path = Path(__file__).parent / "ml" / "data" / "incremental_meta.json"
+    if not meta_path.exists():
+        return {"history": [], "total_trained": 0, "current_version": "0.0"}
+    meta = json.loads(meta_path.read_text())
+    return {
+        "current_version": meta.get("model_version", "0.0"),
+        "total_trained":   meta.get("total_trained", 0),
+        "last_run":        meta.get("last_run"),
+        "history":         meta.get("accuracy_history", []),
+    }
+
+
+@app.patch("/predictions/{prediction_id}/result")
+def update_prediction_result(prediction_id: int, body: dict):
+    """
+    Registra el resultado real de un partido.
+    Body: { "home_goals": 2, "away_goals": 1 }
+    """
+    home_goals = body.get("home_goals")
+    away_goals = body.get("away_goals")
+    if home_goals is None or away_goals is None:
+        raise HTTPException(status_code=400, detail="Se requieren 'home_goals' y 'away_goals'")
+    result = sbc.update_result(prediction_id, int(home_goals), int(away_goals))
+    if not result:
+        raise HTTPException(status_code=404, detail=f"Prediccion {prediction_id} no encontrada o error al actualizar")
     return result
 
 

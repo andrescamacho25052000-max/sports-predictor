@@ -50,7 +50,7 @@ COMPETITION_REGIONS = {
 
 # Cache en memoria para respetar el límite de 10 req/min
 _cache: dict = {}
-CACHE_TTL = 300  # 5 minutos
+CACHE_TTL = 1800  # 30 minutos (los partidos programados no cambian tan seguido)
 
 
 def _get(path: str) -> dict | None:
@@ -76,25 +76,45 @@ def get_leagues() -> list[str]:
 
 
 def get_matches(league: str) -> list[dict]:
+    from datetime import datetime, timezone
+
     code = COMPETITIONS.get(league)
     if not code:
         return []
 
-    data = _get(f"/competitions/{code}/matches?status=SCHEDULED")
+    # Una sola llamada con ambos status (ligas usan SCHEDULED, torneos usan TIMED)
+    data = _get(f"/competitions/{code}/matches?status=SCHEDULED,TIMED")
     if not data or "matches" not in data:
         return []
 
+    now = datetime.now(timezone.utc)
+
+    # Filtrar solo partidos futuros, ordenar por fecha
+    future = []
+    for m in data["matches"]:
+        date_str = m.get("utcDate", "")
+        try:
+            match_dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
+            if match_dt > now:
+                future.append(m)
+        except Exception:
+            pass
+
+    future.sort(key=lambda x: x.get("utcDate", ""))
+
     matches = []
-    for m in data["matches"][:10]:  # máximo 10 partidos
+    for m in future[:10]:
         home = m.get("homeTeam", {})
         away = m.get("awayTeam", {})
         if home.get("name") and away.get("name"):
             matches.append({
-                "home": home["name"],
-                "away": away["name"],
-                "home_id": home.get("id"),
-                "away_id": away.get("id"),
-                "date": m.get("utcDate", ""),
+                "home":       home["name"],
+                "away":       away["name"],
+                "home_id":    home.get("id"),
+                "away_id":    away.get("id"),
+                "date":       m.get("utcDate", ""),
+                "home_crest": home.get("crest", ""),
+                "away_crest": away.get("crest", ""),
             })
     return matches
 
@@ -252,6 +272,63 @@ def get_h2h(team_id_1: int, team_id_2: int) -> dict | None:
         return None
 
     return {"wins": t1_wins, "draws": draws, "losses": t2_wins, "total": found}
+
+
+def search_teams(query: str, limit: int = 8) -> list[dict]:
+    """
+    Busca equipos por nombre usando el índice construido desde los JSON locales.
+    Devuelve [{"id": int, "name": str}, ...] ordenados por relevancia.
+    Sin llamadas a la API externa.
+    """
+    index = _get_team_index()
+    q = query.strip().lower()
+    if len(q) < 2:
+        return []
+
+    # Prioridad: empieza por la query > contiene la query
+    starts = [t for t in index if t["name_lower"].startswith(q)]
+    contains = [t for t in index if q in t["name_lower"] and not t["name_lower"].startswith(q)]
+
+    results = starts + contains
+    return [{"id": t["id"], "name": t["name"]} for t in results[:limit]]
+
+
+def _get_team_index() -> list[dict]:
+    """Construye (y cachea en memoria) el índice nombre→id desde los JSON de datos."""
+    global _team_index_cache
+    if _team_index_cache:
+        return _team_index_cache
+
+    import os, json
+    data_dir = os.path.join(os.path.dirname(__file__), "ml", "data")
+    seen: dict[int, str] = {}  # id → name
+
+    if os.path.exists(data_dir):
+        for fname in os.listdir(data_dir):
+            if not fname.endswith(".json") or fname == "elo_ratings.json":
+                continue
+            try:
+                with open(os.path.join(data_dir, fname), encoding="utf-8") as f:
+                    matches = json.load(f)
+                for m in matches:
+                    for key in ("homeTeam", "awayTeam"):
+                        team = m.get(key, {})
+                        tid = team.get("id")
+                        tname = team.get("name") or team.get("shortName")
+                        if tid and tname and tid not in seen:
+                            seen[tid] = tname
+            except Exception:
+                pass
+
+    _team_index_cache = [
+        {"id": tid, "name": name, "name_lower": name.lower()}
+        for tid, name in sorted(seen.items(), key=lambda x: x[1])
+    ]
+    print(f"[API] Indice de equipos construido: {len(_team_index_cache)} equipos")
+    return _team_index_cache
+
+
+_team_index_cache: list[dict] = []   # cache en memoria del índice de equipos
 
 
 def _empty_form() -> dict:

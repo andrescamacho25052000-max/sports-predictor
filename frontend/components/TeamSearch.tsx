@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { UpcomingMatch } from "@/lib/api";
 
-const api = axios.create({ baseURL: "http://localhost:8000" });
+import { API_URL } from "@/lib/config";
+const api = axios.create({ baseURL: API_URL });
 
 interface Props {
   onSelectMatch: (match: UpcomingMatch) => void;

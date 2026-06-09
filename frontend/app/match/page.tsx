@@ -3,10 +3,15 @@
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchPrediction, Prediction, Match } from "@/lib/api";
+import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import FactorsList     from "@/components/FactorsList";
 import TeamStats       from "@/components/TeamStats";
 import MatchContext    from "@/components/MatchContext";
+import BettingMarkets  from "@/components/BettingMarkets";
+import CornersCards    from "@/components/CornersCards";
+import { TrendingUp, History } from "lucide-react";
+import Link from "next/link";
 
 function formatDate(d: string) {
   if (!d) return "";
@@ -25,8 +30,10 @@ function MatchContent() {
   const away   = sp.get("away")   ?? "";
   const league = sp.get("league") ?? "";
   const date   = sp.get("date")   ?? "";
-  const homeId = sp.get("homeId") ? Number(sp.get("homeId")) : undefined;
-  const awayId = sp.get("awayId") ? Number(sp.get("awayId")) : undefined;
+  const homeId    = sp.get("homeId") ? Number(sp.get("homeId")) : undefined;
+  const awayId    = sp.get("awayId") ? Number(sp.get("awayId")) : undefined;
+  const homeCrest = sp.get("homeCrest") ?? undefined;
+  const awayCrest = sp.get("awayCrest") ?? undefined;
 
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [loading, setLoading]       = useState(true);
@@ -44,69 +51,100 @@ function MatchContent() {
   if (!home || !away) return null;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 px-4 py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 px-4 py-5 sm:py-8 pb-24 sm:pb-8">
+      <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
 
-        {/* ── Botón volver ── */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm group"
-        >
-          <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-          Volver
-        </button>
+        {/* ── Nav bar ── */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors text-sm group"
+          >
+            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none"
+                 viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Volver
+          </button>
+          <a
+            href="/history"
+            className="hidden sm:flex items-center gap-1.5 text-xs text-white/40 hover:text-emerald-400 transition-colors border border-white/10 hover:border-emerald-500/30 rounded-full px-3 py-1"
+          >
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Historial
+          </a>
+        </div>
 
         {/* ── Cabecera del partido ── */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-gray-800/60 via-gray-900/60 to-emerald-900/30 border border-white/10 rounded-3xl p-6 sm:p-10 text-center space-y-6 shadow-2xl">
-          {/* fondo decorativo */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(52,211,153,0.06),transparent_70%)]" />
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative overflow-hidden bg-gradient-to-br from-gray-800/60 via-gray-900/60 to-emerald-900/30 border border-white/10 rounded-3xl p-4 sm:p-10 text-center shadow-2xl"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(52,211,153,0.08),transparent_70%)]" />
 
           {/* liga */}
           {league && (
-            <span className="relative inline-block bg-emerald-500/20 text-emerald-400 text-xs font-bold px-4 py-1.5 rounded-full tracking-wide uppercase">
+            <span className="relative inline-block bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full tracking-wide uppercase mb-3">
               {league}
             </span>
           )}
 
           {/* equipos */}
-          <div className="relative flex items-center justify-between gap-2 sm:gap-6">
+          <div className="relative flex items-center justify-between gap-2 sm:gap-8">
             {/* local */}
-            <div className="flex-1 space-y-3">
-              <p className="text-white text-xl sm:text-3xl font-black leading-tight">
-                {home}
-              </p>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 text-gray-300 text-xs font-medium px-3 py-1.5 rounded-full">
-                🏠 Local
+            <div className="flex-1 flex flex-col items-center gap-2">
+              {homeCrest ? (
+                <img src={homeCrest} alt={home}
+                  className="w-14 h-14 sm:w-20 sm:h-20 object-contain drop-shadow-2xl"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display="none"; }} />
+              ) : (
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xl sm:text-2xl font-black text-white">
+                  {home.slice(0,2).toUpperCase()}
+                </div>
+              )}
+              <p className="text-white text-sm sm:text-2xl font-black leading-tight line-clamp-2 text-center">{home}</p>
+              <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full border border-emerald-500/20">
+                🏠 <span className="hidden sm:inline">Local</span><span className="sm:hidden">L</span>
               </span>
             </div>
 
-            <div className="flex-shrink-0 text-gray-600 font-black text-2xl sm:text-3xl">VS</div>
+            <div className="flex-shrink-0">
+              <span className="text-gray-600 font-black text-2xl sm:text-4xl">VS</span>
+            </div>
 
             {/* visitante */}
-            <div className="flex-1 space-y-3">
-              <p className="text-white text-xl sm:text-3xl font-black leading-tight">
-                {away}
-              </p>
-              <span className="inline-flex items-center gap-1.5 bg-white/10 text-gray-300 text-xs font-medium px-3 py-1.5 rounded-full">
-                ✈️ Visitante
+            <div className="flex-1 flex flex-col items-center gap-2">
+              {awayCrest ? (
+                <img src={awayCrest} alt={away}
+                  className="w-14 h-14 sm:w-20 sm:h-20 object-contain drop-shadow-2xl"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display="none"; }} />
+              ) : (
+                <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xl sm:text-2xl font-black text-white">
+                  {away.slice(0,2).toUpperCase()}
+                </div>
+              )}
+              <p className="text-white text-sm sm:text-2xl font-black leading-tight line-clamp-2 text-center">{away}</p>
+              <span className="inline-flex items-center gap-1 bg-indigo-500/15 text-indigo-400 text-xs font-semibold px-2 py-1 rounded-full border border-indigo-500/20">
+                ✈️ <span className="hidden sm:inline">Visitante</span><span className="sm:hidden">V</span>
               </span>
             </div>
           </div>
 
           {/* fecha */}
           {date && (
-            <p className="relative text-gray-400 text-sm capitalize border-t border-white/10 pt-4">
+            <p className="relative text-gray-400 text-xs sm:text-sm capitalize border-t border-white/10 pt-3 mt-3">
               {formatDate(date)}
             </p>
           )}
-        </div>
+        </motion.div>
 
         {/* ── Loading ── */}
         {loading && (
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-14 flex flex-col items-center gap-5">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-10 sm:p-14 flex flex-col items-center gap-5">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" />
               <svg className="relative animate-spin h-10 w-10 text-emerald-400" viewBox="0 0 24 24" fill="none">
@@ -136,48 +174,69 @@ function MatchContent() {
 
         {/* ── Resultados ── */}
         {prediction && !loading && (
-          <div className="space-y-6">
-
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-4 sm:space-y-6"
+          >
             {/* probabilidades + factores */}
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-6 space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="bg-white/5 border border-white/10 rounded-3xl p-4 sm:p-6 space-y-6"
+            >
               <ProbabilityBar
                 homeTeam={prediction.home_team}
                 awayTeam={prediction.away_team}
                 homeWin={prediction.probabilities.home_win}
                 draw={prediction.probabilities.draw}
                 awayWin={prediction.probabilities.away_win}
+                homeCrest={homeCrest}
+                awayCrest={awayCrest}
               />
-              <div className="border-t border-white/10 pt-6">
+              <div className="border-t border-white/10 pt-5">
                 <FactorsList
                   factors={prediction.factors}
                   homeTeam={prediction.home_team}
                   awayTeam={prediction.away_team}
                 />
               </div>
-            </div>
+            </motion.div>
 
             <p className="text-center text-gray-500 text-xs">
               Modelo: {prediction.model} · Los porcentajes son probabilidades estimadas, no garantías.
             </p>
 
-            {/* estadísticas */}
-            {prediction.team_stats && (
-              <TeamStats
-                home={prediction.team_stats.home}
-                away={prediction.team_stats.away}
-                homeTeam={prediction.home_team}
-                awayTeam={prediction.away_team}
-              />
+            {prediction.poisson && (
+              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.2 }}>
+                <BettingMarkets
+                  poisson={prediction.poisson}
+                  homeTeam={prediction.home_team}
+                  awayTeam={prediction.away_team}
+                />
+              </motion.div>
             )}
 
-            {/* contexto: estadio / clima / lesionados */}
-            <MatchContext
-              stadium={prediction.stadium}
-              weather={prediction.weather}
-              injuries={prediction.injuries}
-            />
+            {prediction.corners_cards && (
+              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.3 }}>
+                <CornersCards
+                  data={prediction.corners_cards}
+                  homeTeam={prediction.home_team}
+                  awayTeam={prediction.away_team}
+                />
+              </motion.div>
+            )}
 
-            {/* botón de retorno */}
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.4 }}>
+              <MatchContext
+                stadium={prediction.stadium}
+                weather={prediction.weather}
+                injuries={prediction.injuries}
+              />
+            </motion.div>
+
             <button
               onClick={() => router.push("/")}
               className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-gray-400 hover:text-white font-medium py-4 rounded-2xl transition-all text-sm"
@@ -187,15 +246,26 @@ function MatchContent() {
               </svg>
               Analizar otro partido
             </button>
-          </div>
+          </motion.div>
         )}
 
       </div>
+
+      {/* ── Bottom nav (solo mobile) ── */}
+      <nav className="fixed bottom-0 left-0 right-0 sm:hidden bg-gray-950/95 backdrop-blur border-t border-white/10 flex z-50">
+        <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
+          <TrendingUp size={20} />
+          <span className="text-xs">Predecir</span>
+        </Link>
+        <Link href="/history" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
+          <History size={20} />
+          <span className="text-xs">Historial</span>
+        </Link>
+      </nav>
     </main>
   );
 }
 
-/* Suspense obligatorio para useSearchParams en Next.js App Router */
 export default function MatchPage() {
   return (
     <Suspense>

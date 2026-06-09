@@ -4,6 +4,12 @@ ml/build_dataset.py — Feature engineering a partir de los JSON descargados.
 Para cada partido calcula las features usando SOLO datos ANTERIORES a ese
 partido (sin filtración del futuro). Genera ml/data/dataset.csv.
 
+Features nuevas v2:
+  - elo_diff            : diferencia de Elo (local − visitante) antes del partido
+  - elo_home_expected   : probabilidad esperada del local según Elo
+  - home_pts_per_game   : puntos por partido del local en esa liga/temporada
+  - away_pts_per_game   : puntos por partido del visitante en esa liga/temporada
+
 Uso:
     cd backend
     python -m ml.build_dataset
@@ -14,11 +20,13 @@ from collections import defaultdict
 import bisect
 import pandas as pd
 
+from ml.elo import EloSystem
+
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 # ─── Parseo ──────────────────────────────────────────────────────────────────
 
-def _parse(m: dict) -> dict | None:
+def _parse(m: dict, league: str = "", season: int = 0) -> dict | None:
     sc = m.get("score", {}).get("fullTime", {})
     h, a = sc.get("home"), sc.get("away")
     if h is None or a is None or m.get("status") != "FINISHED":
@@ -34,6 +42,8 @@ def _parse(m: dict) -> dict | None:
         "away_id":    m["awayTeam"]["id"],
         "home_goals": int(h),
         "away_goals": int(a),
+        "league":     league,
+        "season":     season,
     }
 
 
@@ -67,29 +77,43 @@ def _h2h(all_sorted: list, home_id: int, away_id: int, before_date: datetime, n:
     return hw / t, dr / t
 
 
+def _ppg(points_list: list) -> float:
+    """Puntos por partido acumulados. Neutral = 1.0 si no hay datos."""
+    if not points_list:
+        return 1.0
+    return sum(points_list) / len(points_list)
+
+
 # ─── Dataset builder ─────────────────────────────────────────────────────────
 
 def build_dataset() -> pd.DataFrame:
-    # 1 — cargar todos los JSON
+    # 1 — cargar todos los JSON con info de liga/temporada
     all_matches = []
-    for fname in os.listdir(DATA_DIR):
-        if not fname.endswith(".json"):
+    for fname in sorted(os.listdir(DATA_DIR)):
+        if not fname.endswith(".json") or fname == "elo_ratings.json":
             continue
+        # Formato esperado: CODE_SEASON.json (ej. PL_2023.json)
+        parts = fname[:-5].split("_")
+        league_code = parts[0] if len(parts) >= 2 else ""
+        try:
+            season_year = int(parts[-1])
+        except ValueError:
+            season_year = 0
+
         with open(os.path.join(DATA_DIR, fname), encoding="utf-8") as f:
             for m in json.load(f):
-                parsed = _parse(m)
+                parsed = _parse(m, league_code, season_year)
                 if parsed:
                     all_matches.append(parsed)
 
     all_matches.sort(key=lambda x: x["date"])
     print(f"  Partidos válidos cargados: {len(all_matches)}")
 
-    # 2 — índice por equipo para búsqueda eficiente
+    # 2 — índice por equipo para búsqueda eficiente de forma
     team_idx: dict[int, list] = defaultdict(list)
     for m in all_matches:
         team_idx[m["home_id"]].append(m)
         team_idx[m["away_id"]].append(m)
-    # cada lista ya está ordenada (all_matches está ordenado)
 
     def last_n(team_id: int, before: datetime, n: int = 5, as_home: bool | None = None):
         lst = team_idx[team_id]
@@ -101,16 +125,25 @@ def build_dataset() -> pd.DataFrame:
             history = [m for m in history if m["away_id"] == team_id]
         return history[-n:]
 
-    # 3 — construir filas
+    # 3 — estado acumulativo: Elo y puntos por liga/temporada
+    elo = EloSystem()
+    # key = (team_id, league_code, season_year) → lista de puntos obtenidos
+    season_pts: dict[tuple, list] = defaultdict(list)
+
+    # 4 — construir filas
     rows = []
     for m in all_matches:
         hid, aid = m["home_id"], m["away_id"]
         bd = m["date"]
+        lg, seas = m["league"], m["season"]
 
         h5 = last_n(hid, bd, 5)
         a5 = last_n(aid, bd, 5)
         if len(h5) < 3 or len(a5) < 3:
-            continue   # muy pocos datos previos → no confiable
+            # Actualizar Elo de todos modos para que los ratings sean correctos
+            elo.update(hid, aid, m["home_goals"], m["away_goals"])
+            _update_season_pts(season_pts, hid, aid, lg, seas, m["home_goals"], m["away_goals"])
+            continue
 
         hw, hd, hl, hgf, hga = _form(h5, hid)
         aw, ad, al, agf, aga = _form(a5, aid)
@@ -122,21 +155,40 @@ def build_dataset() -> pd.DataFrame:
 
         h2h_hr, h2h_dr = _h2h(all_matches, hid, aid, bd)
 
-        if m["home_goals"] > m["away_goals"]:    result = 0   # local
-        elif m["home_goals"] == m["away_goals"]: result = 1   # empate
-        else:                                     result = 2   # visitante
+        # ── Elo PRE-partido (antes de actualizar) ─────────────────
+        elo_diff         = elo.diff(hid, aid)
+        elo_home_exp     = elo.expected_home_win(hid, aid)
+
+        # ── Puntos por partido PRE-partido en esa liga/temporada ──
+        home_ppg = _ppg(season_pts[(hid, lg, seas)])
+        away_ppg = _ppg(season_pts[(aid, lg, seas)])
+
+        if m["home_goals"] > m["away_goals"]:    result = 0
+        elif m["home_goals"] == m["away_goals"]: result = 1
+        else:                                     result = 2
 
         rows.append({
-            "home_wins_5":     hw,   "home_draws_5":     hd,   "home_losses_5":     hl,
-            "home_gf_5":       hgf,  "home_ga_5":        hga,
-            "away_wins_5":     aw,   "away_draws_5":     ad,   "away_losses_5":     al,
-            "away_gf_5":       agf,  "away_ga_5":        aga,
-            "home_home_wins":  h_hw, "home_home_draws":  h_hd, "home_home_losses":  h_hl,
-            "away_away_wins":  a_aw, "away_away_draws":  a_ad, "away_away_losses":  a_al,
-            "h2h_home_ratio":  h2h_hr,
-            "h2h_draw_ratio":  h2h_dr,
-            "result":          result,
+            "home_wins_5":       hw,   "home_draws_5":       hd,   "home_losses_5":       hl,
+            "home_gf_5":         hgf,  "home_ga_5":          hga,
+            "away_wins_5":       aw,   "away_draws_5":       ad,   "away_losses_5":       al,
+            "away_gf_5":         agf,  "away_ga_5":          aga,
+            "home_home_wins":    h_hw, "home_home_draws":    h_hd, "home_home_losses":    h_hl,
+            "away_away_wins":    a_aw, "away_away_draws":    a_ad, "away_away_losses":    a_al,
+            "h2h_home_ratio":    h2h_hr,
+            "h2h_draw_ratio":    h2h_dr,
+            "elo_diff":          round(elo_diff, 2),
+            "elo_home_expected": round(elo_home_exp, 4),
+            "home_pts_per_game": round(home_ppg, 4),
+            "away_pts_per_game": round(away_ppg, 4),
+            "result":            result,
         })
+
+        # ── Actualizar estado POST-partido ────────────────────────
+        elo.update(hid, aid, m["home_goals"], m["away_goals"])
+        _update_season_pts(season_pts, hid, aid, lg, seas, m["home_goals"], m["away_goals"])
+
+    # Guardar Elo final (se usa en producción para predicciones en tiempo real)
+    elo.save()
 
     df = pd.DataFrame(rows)
     out = os.path.join(DATA_DIR, "dataset.csv")
@@ -145,8 +197,25 @@ def build_dataset() -> pd.DataFrame:
     dist = df["result"].value_counts().rename({0: "Local", 1: "Empate", 2: "Visitante"})
     print(f"  Filas en el dataset: {len(df)}")
     print(f"  Distribución: {dist.to_dict()}")
+    print(f"  Equipos con Elo calculado: {len(elo.ratings)}")
+    print(f"  Top 5 Elo:")
+    for tid, rating in elo.top(5):
+        print(f"    {tid}: {rating:.0f}")
     print(f"  Guardado en: {out}")
     return df
+
+
+def _update_season_pts(season_pts, hid, aid, lg, seas, hg, ag):
+    """Registra los puntos obtenidos en la liga/temporada tras un partido."""
+    if hg > ag:
+        season_pts[(hid, lg, seas)].append(3)
+        season_pts[(aid, lg, seas)].append(0)
+    elif hg == ag:
+        season_pts[(hid, lg, seas)].append(1)
+        season_pts[(aid, lg, seas)].append(1)
+    else:
+        season_pts[(hid, lg, seas)].append(0)
+        season_pts[(aid, lg, seas)].append(3)
 
 
 if __name__ == "__main__":
