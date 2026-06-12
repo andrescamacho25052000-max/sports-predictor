@@ -7,10 +7,7 @@ import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import ValuePanel      from "@/components/ValuePanel";
 import ParlaySuggestions from "@/components/ParlaySuggestions";
-import TeamStats       from "@/components/TeamStats";
-import MatchContext    from "@/components/MatchContext";
 import BettingMarkets  from "@/components/BettingMarkets";
-import CornersCards    from "@/components/CornersCards";
 import { TrendingUp, History } from "lucide-react";
 import Link from "next/link";
 
@@ -231,24 +228,6 @@ function MatchContent() {
                 />
               </motion.div>
             )}
-
-            {prediction.corners_cards && (
-              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.3 }}>
-                <CornersCards
-                  data={prediction.corners_cards}
-                  homeTeam={prediction.home_team}
-                  awayTeam={prediction.away_team}
-                />
-              </motion.div>
-            )}
-
-            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.4 }}>
-              <MatchContext
-                stadium={prediction.stadium}
-                weather={prediction.weather}
-                injuries={prediction.injuries}
-              />
-            </motion.div>
 
             <button
               onClick={() => router.push("/")}
