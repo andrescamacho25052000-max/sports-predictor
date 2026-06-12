@@ -6,6 +6,7 @@ import { fetchPrediction, Prediction, Match } from "@/lib/api";
 import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import ValuePanel      from "@/components/ValuePanel";
+import ParlaySuggestions from "@/components/ParlaySuggestions";
 import TeamStats       from "@/components/TeamStats";
 import MatchContext    from "@/components/MatchContext";
 import BettingMarkets  from "@/components/BettingMarkets";
@@ -210,6 +211,16 @@ function MatchContent() {
             <p className="text-center text-gray-500 text-xs">
               Modelo: {prediction.model} · Los porcentajes son probabilidades estimadas, no garantías.
             </p>
+
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.15 }}>
+              <ParlaySuggestions
+                probabilities={prediction.probabilities}
+                poisson={prediction.poisson}
+                cornersCards={prediction.corners_cards}
+                homeTeam={prediction.home_team}
+                awayTeam={prediction.away_team}
+              />
+            </motion.div>
 
             {prediction.poisson && (
               <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.2 }}>

@@ -44,6 +44,12 @@ function confidence(p: number) {
   return        { label: "Poco probable",        dot: "bg-gray-600"  };
 }
 
+/** Cuota mínima de Betplay para que la apuesta tenga valor. */
+function mo(p: number) {
+  if (p <= 0) return "—";
+  return `> ${(100 / p).toFixed(2)}`;
+}
+
 /* ─── bloques reutilizables ──────────────────────────────────────────────── */
 
 function SectionCard({ icon, title, subtitle, children }: {
@@ -74,6 +80,7 @@ function BigOption({ label, prob, highlight }: { label: string; prob: number; hi
         <span className={`w-1.5 h-1.5 rounded-full ${conf.dot}`} />
         <span className="text-xs text-gray-500">{conf.label}</span>
       </div>
+      <p className="text-[10px] text-gray-600">cuota mín. {mo(prob)}</p>
     </div>
   );
 }
@@ -89,12 +96,18 @@ function GoalLineRow({ question, overProb, underLabel, underProb }: {
         <div className={`rounded-xl border px-4 py-3 flex items-center justify-between
           ${isOverFav ? probBg(overProb) : "bg-white/4 border-white/8"}`}>
           <span className="text-sm text-gray-300">Sí</span>
-          <span className={`text-base font-black ${probColor(overProb)}`}>{overProb}%</span>
+          <span className="text-right">
+            <span className={`text-base font-black ${probColor(overProb)}`}>{overProb}%</span>
+            <span className="block text-[10px] text-gray-600">{mo(overProb)}</span>
+          </span>
         </div>
         <div className={`rounded-xl border px-4 py-3 flex items-center justify-between
           ${!isOverFav ? probBg(underProb) : "bg-white/4 border-white/8"}`}>
           <span className="text-sm text-gray-300">{underLabel}</span>
-          <span className={`text-base font-black ${probColor(underProb)}`}>{underProb}%</span>
+          <span className="text-right">
+            <span className={`text-base font-black ${probColor(underProb)}`}>{underProb}%</span>
+            <span className="block text-[10px] text-gray-600">{mo(underProb)}</span>
+          </span>
         </div>
       </div>
     </div>
@@ -208,12 +221,18 @@ export default function BettingMarkets({ poisson, homeTeam, awayTeam }: Props) {
                   <div className={`rounded-xl border px-4 py-2.5 flex items-center justify-between
                     ${favOver ? probBg(over) : "bg-white/4 border-white/8"}`}>
                     <span className="text-sm text-gray-300">Sí (Over {line})</span>
-                    <span className={`text-base font-black ${probColor(over)}`}>{over}%</span>
+                    <span className="text-right">
+                      <span className={`text-base font-black ${probColor(over)}`}>{over}%</span>
+                      <span className="block text-[10px] text-gray-600">{mo(over)}</span>
+                    </span>
                   </div>
                   <div className={`rounded-xl border px-4 py-2.5 flex items-center justify-between
                     ${!favOver ? probBg(under) : "bg-white/4 border-white/8"}`}>
                     <span className="text-sm text-gray-300">No (Under {line})</span>
-                    <span className={`text-base font-black ${probColor(under)}`}>{under}%</span>
+                    <span className="text-right">
+                      <span className={`text-base font-black ${probColor(under)}`}>{under}%</span>
+                      <span className="block text-[10px] text-gray-600">{mo(under)}</span>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -312,7 +331,7 @@ export default function BettingMarkets({ poisson, homeTeam, awayTeam }: Props) {
                 </div>
                 <div className="text-right flex-shrink-0 ml-3">
                   <span className={`text-lg font-black ${probColor(prob)}`}>{prob}%</span>
-                  <p className="text-xs text-gray-600">{conf.label}</p>
+                  <p className="text-xs text-gray-600">{conf.label} · {mo(prob)}</p>
                 </div>
               </div>
             );

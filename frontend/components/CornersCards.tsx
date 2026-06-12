@@ -1,6 +1,7 @@
 "use client";
 
 import { CornerCardsData } from "@/lib/api";
+import { poissonOver } from "@/lib/markets";
 
 interface Props {
   data: CornerCardsData;
@@ -9,6 +10,12 @@ interface Props {
 }
 
 function pct(n: number) { return `${Math.round(n * 100)}%`; }
+
+/** Cuota mínima para que la apuesta tenga valor (p en fracción 0-1). */
+function mo(p: number) {
+  if (p <= 0) return "—";
+  return `>${(1 / p).toFixed(2)}`;
+}
 
 function short(name: string) {
   if (name.length <= 10) return name;
@@ -36,15 +43,23 @@ function OverUnderGrid({ markets, label }: { markets: Record<string, number>; la
   return (
     <div className="space-y-2">
       <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</p>
-      {/* 3 cols en mobile, mismos 3 cols en desktop — OK porque son solo números */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-        {entries.map(([threshold, prob]) => (
-          <div key={threshold} className={`rounded-xl border p-2 sm:p-2.5 text-center ${confidence(prob)}`}>
-            <div className="text-xs sm:text-sm font-bold">+{threshold}</div>
-            <div className="text-xs font-semibold">{pct(prob)}</div>
-            <div className="text-xs opacity-60">Over</div>
-          </div>
-        ))}
+      {/* color de la celda según el lado favorito (over o under) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+        {entries.map(([threshold, prob]) => {
+          const under = 1 - prob;
+          return (
+            <div key={threshold}
+              className={`rounded-xl border p-2 sm:p-2.5 text-center space-y-0.5 ${confidence(Math.max(prob, under))}`}>
+              <div className="text-xs sm:text-sm font-bold">Línea {threshold}</div>
+              <div className={`text-xs ${prob >= under ? "font-bold" : "opacity-60"}`}>
+                Más: {pct(prob)} <span className="opacity-70">{mo(prob)}</span>
+              </div>
+              <div className={`text-xs ${under > prob ? "font-bold" : "opacity-60"}`}>
+                Menos: {pct(under)} <span className="opacity-70">{mo(under)}</span>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -145,6 +160,17 @@ export default function CornersCards({ data, homeTeam, awayTeam }: Props) {
           <StatBadge label="Total" value={fouls.expected_total.toFixed(1)} color="bg-white/5 border-white/10 text-white" />
           <StatBadge label={A} value={fouls.expected_away.toFixed(1)} color="bg-red-500/10 border-red-500/20 text-red-300" />
         </div>
+        {fouls.expected_total > 10 && (
+          <OverUnderGrid
+            label="Over/Under faltas (Poisson sobre el promedio)"
+            markets={Object.fromEntries(
+              [-4.5, -2.5, -0.5, 1.5, 3.5].map((off) => {
+                const line = Math.round(fouls.expected_total) + off;
+                return [String(line), poissonOver(fouls.expected_total, line) / 100];
+              })
+            )}
+          />
+        )}
       </div>
 
       <p className="text-center text-gray-600 text-xs">

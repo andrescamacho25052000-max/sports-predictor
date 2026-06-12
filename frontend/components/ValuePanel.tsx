@@ -2,6 +2,7 @@
 
 import { Target, Info } from "lucide-react";
 import { PoissonData, CornerCardsData } from "@/lib/api";
+import { buildMarketRows, minOdds, CATEGORY_COLORS } from "@/lib/markets";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -12,85 +13,13 @@ interface Props {
   awayTeam: string;
 }
 
-interface MarketRow {
-  market: string;
-  category: "Resultado" | "Goles" | "Córners" | "Tarjetas";
-  prob: number; // 0-100
-}
-
-const CATEGORY_COLORS: Record<MarketRow["category"], string> = {
-  Resultado: "bg-emerald-500/15 text-emerald-400",
-  Goles:     "bg-sky-500/15     text-sky-400",
-  Córners:   "bg-amber-500/15   text-amber-400",
-  Tarjetas:  "bg-rose-500/15    text-rose-400",
-};
-
-function buildRows(
-  probabilities: Props["probabilities"],
-  poisson: PoissonData | undefined,
-  cornersCards: CornerCardsData | undefined,
-  homeTeam: string,
-  awayTeam: string,
-): MarketRow[] {
-  const rows: MarketRow[] = [];
-  const { home_win, draw, away_win } = probabilities;
-
-  rows.push(
-    { market: `Gana ${homeTeam} (1)`,           category: "Resultado", prob: home_win },
-    { market: "Empate (X)",                      category: "Resultado", prob: draw },
-    { market: `Gana ${awayTeam} (2)`,            category: "Resultado", prob: away_win },
-    { market: `${homeTeam} o empate (1X)`,       category: "Resultado", prob: home_win + draw },
-    { market: `${awayTeam} o empate (X2)`,       category: "Resultado", prob: draw + away_win },
-    { market: `${homeTeam} o ${awayTeam} (12)`,  category: "Resultado", prob: home_win + away_win },
-  );
-
-  if (poisson) {
-    const ou = poisson.over_under;
-    for (const line of ["1.5", "2.5", "3.5"]) {
-      const over  = ou[`over_${line}`];
-      const under = ou[`under_${line}`];
-      if (over  != null) rows.push({ market: `Más de ${line} goles`,   category: "Goles", prob: over });
-      if (under != null) rows.push({ market: `Menos de ${line} goles`, category: "Goles", prob: under });
-    }
-    rows.push(
-      { market: "Ambos equipos marcan: Sí", category: "Goles", prob: poisson.btts.yes },
-      { market: "Ambos equipos marcan: No", category: "Goles", prob: poisson.btts.no },
-    );
-  }
-
-  if (cornersCards) {
-    // corners/tarjetas vienen como fracción 0-1 (no porcentaje)
-    const co = cornersCards.corners.over_under;
-    for (const line of ["7.5", "8.5", "9.5"]) {
-      const v = co[line];
-      if (v != null) {
-        rows.push(
-          { market: `Más de ${line} córners`,   category: "Córners", prob: v * 100 },
-          { market: `Menos de ${line} córners`, category: "Córners", prob: (1 - v) * 100 },
-        );
-      }
-    }
-    const yc = cornersCards.yellow_cards.over_under;
-    for (const line of ["2.5", "3.5", "4.5"]) {
-      const v = yc[line];
-      if (v != null) {
-        rows.push(
-          { market: `Más de ${line} amarillas`,   category: "Tarjetas", prob: v * 100 },
-          { market: `Menos de ${line} amarillas`, category: "Tarjetas", prob: (1 - v) * 100 },
-        );
-      }
-    }
-  }
-
-  return rows;
-}
-
 export default function ValuePanel({ probabilities, poisson, cornersCards, homeTeam, awayTeam }: Props) {
   const MIN_PROB = 55;   // por debajo de esto el mercado es moneda al aire
+  const MAX_PROB = 93;   // por encima la cuota es tan baja que rara vez hay valor
   const MAX_ROWS = 12;
 
-  const ranked = buildRows(probabilities, poisson, cornersCards, homeTeam, awayTeam)
-    .filter((r) => r.prob >= MIN_PROB)
+  const ranked = buildMarketRows(probabilities, poisson, cornersCards, homeTeam, awayTeam)
+    .filter((r) => r.prob >= MIN_PROB && r.prob <= MAX_PROB)
     .sort((a, b) => b.prob - a.prob)
     .slice(0, MAX_ROWS);
 
@@ -118,9 +47,9 @@ export default function ValuePanel({ probabilities, poisson, cornersCards, homeT
       ) : (
         <div className="space-y-2">
           {ranked.map((row) => {
-            const minOdds = 100 / row.prob;
-            const high    = row.prob >= 70;
-            const medium  = row.prob >= 62 && !high;
+            const odds   = minOdds(row.prob);
+            const high   = row.prob >= 70;
+            const medium = row.prob >= 62 && !high;
 
             return (
               <div
@@ -155,7 +84,7 @@ export default function ValuePanel({ probabilities, poisson, cornersCards, homeT
                   </div>
                   <div className="w-16">
                     <p className="text-white text-sm font-bold leading-none">
-                      &gt; {minOdds.toFixed(2)}
+                      &gt; {odds.toFixed(2)}
                     </p>
                     <p className="text-gray-600 text-[10px] mt-0.5">cuota mín.</p>
                   </div>
