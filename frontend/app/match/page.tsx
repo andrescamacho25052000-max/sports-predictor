@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import ValuePanel      from "@/components/ValuePanel";
 import ParlaySuggestions from "@/components/ParlaySuggestions";
-import BettingMarkets  from "@/components/BettingMarkets";
 import { TrendingUp, History } from "lucide-react";
 import Link from "next/link";
 
@@ -218,16 +217,6 @@ function MatchContent() {
                 awayTeam={prediction.away_team}
               />
             </motion.div>
-
-            {prediction.poisson && (
-              <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.2 }}>
-                <BettingMarkets
-                  poisson={prediction.poisson}
-                  homeTeam={prediction.home_team}
-                  awayTeam={prediction.away_team}
-                />
-              </motion.div>
-            )}
 
             <button
               onClick={() => router.push("/")}
