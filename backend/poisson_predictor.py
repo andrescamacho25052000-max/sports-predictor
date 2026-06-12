@@ -47,16 +47,33 @@ def _score_matrix(lam_h: float, lam_a: float) -> list[list[float]]:
     ]
 
 
+def _team_rates(stats: dict, prior_scored: float, prior_conceded: float) -> tuple[float, float]:
+    """
+    Goles por partido (anotados, recibidos) de un equipo.
+    Divide entre los partidos realmente jugados (no 5 fijo) y mezcla con el
+    promedio de liga como prior bayesiano para muestras chicas: con 0 partidos
+    devuelve el prior puro; con pocos partidos, un punto intermedio.
+    """
+    played   = stats.get("played", 5) or 0
+    scored   = stats.get("goals_scored_last5")
+    conceded = stats.get("goals_conceded_last5")
+
+    if played <= 0 or scored is None or conceded is None:
+        return prior_scored, prior_conceded
+
+    PRIOR_WEIGHT = 2  # equivale a 2 partidos de evidencia al promedio de liga
+    rate_scored   = (scored   + prior_scored   * PRIOR_WEIGHT) / (played + PRIOR_WEIGHT)
+    rate_conceded = (conceded + prior_conceded * PRIOR_WEIGHT) / (played + PRIOR_WEIGHT)
+    return rate_scored, rate_conceded
+
+
 def _calc_lambdas(home_stats: dict, away_stats: dict) -> tuple[float, float]:
     """
     Calcula λ_home y λ_away a partir de los stats de cada equipo.
-    Usa los últimos 5 partidos y ajusta por ventaja de localía.
+    Usa los partidos jugados reales y ajusta por ventaja de localía.
     """
-    # Goles por partido en los últimos 5
-    h_scored   = home_stats.get("goals_scored_last5",  LEAGUE_AVG_SCORED   * 5) / 5
-    h_conceded = home_stats.get("goals_conceded_last5", LEAGUE_AVG_CONCEDED * 5) / 5
-    a_scored   = away_stats.get("goals_scored_last5",  LEAGUE_AVG_CONCEDED * 5) / 5
-    a_conceded = away_stats.get("goals_conceded_last5", LEAGUE_AVG_SCORED   * 5) / 5
+    h_scored, h_conceded = _team_rates(home_stats, LEAGUE_AVG_SCORED,   LEAGUE_AVG_CONCEDED)
+    a_scored, a_conceded = _team_rates(away_stats, LEAGUE_AVG_CONCEDED, LEAGUE_AVG_SCORED)
 
     # λ = promedio de ataque × factor defensivo del rival (Dixon-Coles simplificado)
     lam_h = ((h_scored + a_conceded) / 2) * HOME_ADVANTAGE

@@ -123,7 +123,7 @@ def get_team_form(team_id: int, limit: int = 5) -> dict:
     """Retorna estadísticas recientes de un equipo."""
     data = _get(f"/teams/{team_id}/matches?status=FINISHED&limit={limit}")
     if not data or "matches" not in data:
-        return _empty_form()
+        return _get_national_form(team_id) or _empty_form()
 
     matches = data["matches"][-limit:]
     wins = draws = losses = 0
@@ -149,6 +149,15 @@ def get_team_form(team_id: int, limit: int = 5) -> dict:
             losses += 1
 
     played = wins + draws + losses
+    if played < 3:
+        # Muy pocos partidos terminados en la API (selecciones al inicio de
+        # un torneo): preferir la forma precalculada del dataset internacional,
+        # que trae los últimos 5 reales. Si tampoco existe, valores neutros.
+        nat = _get_national_form(team_id)
+        if nat:
+            return nat
+        if played == 0:
+            return _empty_form()
     return {
         "wins_last5":          wins,
         "draws_last5":         draws,
@@ -208,7 +217,8 @@ def get_team_recent_matches(team_id: int, limit: int = 5) -> list:
     """Retorna el historial detallado de los últimos N partidos de un equipo."""
     data = _get(f"/teams/{team_id}/matches?status=FINISHED&limit={limit}")
     if not data or "matches" not in data:
-        return []
+        nat = _get_national_form(team_id)
+        return nat.get("recent_matches", []) if nat else []
 
     result = []
     for m in data["matches"][-limit:]:
@@ -240,6 +250,10 @@ def get_team_recent_matches(team_id: int, limit: int = 5) -> list:
             "date": m.get("utcDate", "")[:10],
         })
 
+    if len(result) < 3:
+        nat = _get_national_form(team_id)
+        if nat and len(nat.get("recent_matches", [])) > len(result):
+            return nat["recent_matches"]
     return result
 
 
@@ -329,6 +343,27 @@ def _get_team_index() -> list[dict]:
 
 
 _team_index_cache: list[dict] = []   # cache en memoria del índice de equipos
+_national_form_cache: dict | None = None   # forma de selecciones (ml/data/national_form.json)
+
+
+def _get_national_form(team_id: int) -> dict | None:
+    """
+    Forma precalculada de selecciones nacionales generada por
+    ml/build_national_elo.py desde el dataset de partidos internacionales.
+    Devuelve un dict con el mismo formato que get_team_form (+ recent_matches),
+    o None si el equipo no es una selección conocida.
+    """
+    global _national_form_cache
+    if _national_form_cache is None:
+        import json
+        path = os.path.join(os.path.dirname(__file__), "ml", "data", "national_form.json")
+        try:
+            with open(path, encoding="utf-8") as f:
+                _national_form_cache = json.load(f)
+        except Exception:
+            _national_form_cache = {}
+    entry = _national_form_cache.get(str(team_id))
+    return dict(entry) if entry else None
 
 
 def _empty_form() -> dict:

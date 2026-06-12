@@ -29,6 +29,44 @@ async def _result_checker_loop():
         await asyncio.sleep(3600)  # cada hora
 
 
+def _refresh_national_data() -> dict:
+    """
+    Descarga el dataset de partidos internacionales (se actualiza a diario en
+    GitHub), recalcula Elo + forma de las selecciones del Mundial y recarga
+    los caches en memoria. Idempotente; seguro de llamar en producción donde
+    ml/data/*.json no existe (está gitignorado).
+    """
+    from ml.build_national_elo import rebuild
+    summary = rebuild(download=True)
+    fapi._national_form_cache = None   # invalidar cache de forma de selecciones
+    import ml_predictor
+    ml_predictor.reload_elo()
+    return summary
+
+
+async def _national_data_loop():
+    """
+    Refresca Elo y forma de selecciones cada 24h.
+    Al arrancar, si los archivos no existen (deploy nuevo en Railway),
+    los construye de inmediato.
+    """
+    from pathlib import Path
+    data_dir = Path(__file__).parent / "ml" / "data"
+    files_ok = (data_dir / "national_form.json").exists() and \
+               (data_dir / "elo_ratings.json").exists()
+    if files_ok:
+        await asyncio.sleep(86400)  # ya hay datos: primer refresh en 24h
+    while True:
+        try:
+            s = await asyncio.get_event_loop().run_in_executor(
+                None, _refresh_national_data
+            )
+            print(f"[Scheduler] Datos de selecciones refrescados: {s}")
+        except Exception as e:
+            print(f"[Scheduler] Error refrescando datos de selecciones: {e}")
+        await asyncio.sleep(86400)  # cada 24 horas
+
+
 @app.on_event("startup")
 async def warm_cache():
     """Pre-calienta el caché de partidos al arrancar para que la primera
@@ -54,6 +92,10 @@ async def warm_cache():
     # Arrancar el checker automático de resultados
     asyncio.create_task(_result_checker_loop())
     print("[Scheduler] Result checker iniciado — revisa resultados cada hora")
+
+    # Refresco diario de Elo + forma de selecciones (y build inicial si faltan)
+    asyncio.create_task(_national_data_loop())
+    print("[Scheduler] Refresh de datos de selecciones iniciado — cada 24h")
 
 import os
 
@@ -392,15 +434,31 @@ async def trigger_result_check():
 
 @app.post("/predictions/retrain")
 async def trigger_retrain(body: dict = {}):
-    """Dispara reentrenamiento incremental manual del modelo."""
+    """
+    Dispara reentrenamiento incremental manual del modelo.
+    También refresca el Elo y la forma de selecciones con el dataset
+    internacional más reciente.
+    """
     force = body.get("force", False)
+
+    try:
+        national = await asyncio.get_event_loop().run_in_executor(
+            None, _refresh_national_data
+        )
+    except Exception as e:
+        national = {"error": str(e)}
+
     def _retrain():
         import sys, os
         sys.path.insert(0, os.path.join(os.path.dirname(__file__), "ml"))
         from ml.incremental_trainer import run_incremental_training
         return run_incremental_training(force=force)
     result = await asyncio.get_event_loop().run_in_executor(None, _retrain)
-    return result
+
+    if isinstance(result, dict):
+        result["national_data"] = national
+        return result
+    return {"retrain": result, "national_data": national}
 
 
 @app.get("/predictions/model-evolution")

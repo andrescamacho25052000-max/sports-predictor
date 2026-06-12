@@ -28,3 +28,8 @@ Thumbs.db
 
 # ML — datos crudos (grandes, se regeneran con train_model.bat)
 backend/ml/data/*.json
+backend/ml/data/international_results.csv
+
+# Logs locales
+backend/uvicorn.log
+backend/uvicorn_err.log

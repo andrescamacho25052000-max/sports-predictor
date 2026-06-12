@@ -60,6 +60,23 @@ def _load():
     return _ready
 
 
+def reload_elo() -> int:
+    """
+    Recarga los ratings Elo desde disco sin reiniciar el proceso.
+    Usado tras regenerar elo_ratings.json (refresh de datos de selecciones).
+    """
+    global _elo
+    try:
+        import json
+        with open(ELO_PATH, encoding="utf-8") as f:
+            raw = json.load(f)
+        _elo = {int(k): float(v) for k, v in raw.items()}
+        print(f"[ML] Elo recargado: {len(_elo)} equipos")
+    except Exception as e:
+        print(f"[ML] Error recargando Elo: {e}")
+    return len(_elo)
+
+
 def _get_elo(team_id: int | None) -> float:
     if team_id is None:
         return BASE_ELO
