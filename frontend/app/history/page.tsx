@@ -395,7 +395,7 @@ export default function HistoryPage() {
     setChecking(true);
     setCheckMsg("");
     try {
-      const res = await fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/check-results", { method: "POST" });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/check-results`, { method: "POST" });
       const data = await res.json();
       setCheckMsg(data.message);
       if (data.updated > 0) await load();
@@ -411,9 +411,9 @@ export default function HistoryPage() {
     setLoading(true);
     try {
       const [predRes, statsRes, evoRes] = await Promise.all([
-        fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions?limit=100"),
-        fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/stats"),
-        fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/model-evolution"),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions?limit=100`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/stats`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/model-evolution`),
       ]);
       const predData  = await predRes.json();
       const statsData = await statsRes.json();
@@ -473,7 +473,7 @@ export default function HistoryPage() {
               onClick={async () => {
                 setRetraining(true);
                 try {
-                  const r = await fetch("${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/retrain", { method: "POST", headers: {"Content-Type":"application/json"}, body: '{}' });
+                  const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/retrain`, { method: "POST", headers: {"Content-Type":"application/json"}, body: '{}' });
                   const d = await r.json();
                   setCheckMsg(d.status === "trained" ? `Modelo v${d.new_version} — ${d.accuracy_after}%` : d.message || d.status);
                   if (d.status === "trained") await load();

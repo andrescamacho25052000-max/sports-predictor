@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { fetchPrediction, Prediction, Match } from "@/lib/api";
 import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
-import FactorsList     from "@/components/FactorsList";
+import ValuePanel      from "@/components/ValuePanel";
 import TeamStats       from "@/components/TeamStats";
 import MatchContext    from "@/components/MatchContext";
 import BettingMarkets  from "@/components/BettingMarkets";
@@ -197,8 +197,10 @@ function MatchContent() {
                 awayCrest={awayCrest}
               />
               <div className="border-t border-white/10 pt-5">
-                <FactorsList
-                  factors={prediction.factors}
+                <ValuePanel
+                  probabilities={prediction.probabilities}
+                  poisson={prediction.poisson}
+                  cornersCards={prediction.corners_cards}
                   homeTeam={prediction.home_team}
                   awayTeam={prediction.away_team}
                 />
