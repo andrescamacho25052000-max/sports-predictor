@@ -2,7 +2,7 @@
 
 import { Target, Info } from "lucide-react";
 import { PoissonData, CornerCardsData } from "@/lib/api";
-import { buildMarketRows, minOdds, CATEGORY_COLORS } from "@/lib/markets";
+import { buildMarketRows, topExactScores, minOdds, CATEGORY_COLORS } from "@/lib/markets";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -22,6 +22,8 @@ export default function ValuePanel({ probabilities, poisson, cornersCards, homeT
     .filter((r) => r.prob >= MIN_PROB && r.prob <= MAX_PROB)
     .sort((a, b) => b.prob - a.prob)
     .slice(0, MAX_ROWS);
+
+  const scores = topExactScores(poisson, homeTeam, awayTeam, 3);
 
   return (
     <div className="space-y-4">
@@ -92,6 +94,48 @@ export default function ValuePanel({ probabilities, poisson, cornersCards, homeT
               </div>
             );
           })}
+        </div>
+      )}
+
+      {scores.length > 0 && (
+        <div className="space-y-2 pt-1">
+          <p className="text-gray-500 text-xs font-medium uppercase tracking-wide">
+            Marcador exacto — probabilidad baja, cuota alta
+          </p>
+          {scores.map((row) => (
+            <div
+              key={row.market}
+              className="rounded-xl p-3.5 border border-white/10 bg-white/5 flex items-center gap-3"
+            >
+              <span className={cn(
+                "text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 uppercase tracking-wide",
+                CATEGORY_COLORS[row.category]
+              )}>
+                {row.category}
+              </span>
+
+              <span className="text-white text-sm font-medium flex-1 min-w-0 truncate">
+                {row.market}
+              </span>
+
+              <div className="flex items-center gap-4 flex-shrink-0 text-right">
+                <div>
+                  <p className="text-sm font-bold leading-none text-gray-300">{row.prob.toFixed(1)}%</p>
+                  <p className="text-gray-600 text-[10px] mt-0.5">probabilidad</p>
+                </div>
+                <div className="w-16">
+                  <p className="text-white text-sm font-bold leading-none">
+                    &gt; {minOdds(row.prob).toFixed(2)}
+                  </p>
+                  <p className="text-gray-600 text-[10px] mt-0.5">cuota mín.</p>
+                </div>
+              </div>
+            </div>
+          ))}
+          <p className="text-gray-600 text-[11px] leading-relaxed">
+            El marcador exacto falla la mayoría de las veces incluso cuando el modelo acierta
+            la tendencia — úsalo con montos pequeños y nunca como pata de una combinada.
+          </p>
         </div>
       )}
 

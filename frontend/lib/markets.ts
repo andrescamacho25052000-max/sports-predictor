@@ -6,7 +6,7 @@ import { PoissonData, CornerCardsData } from "@/lib/api";
  */
 
 export type MarketCategory =
-  | "Resultado" | "Goles" | "Córners" | "Tarjetas" | "Faltas";
+  | "Resultado" | "Goles" | "Córners" | "Tarjetas" | "Faltas" | "Marcador";
 
 export interface MarketRow {
   market: string;
@@ -20,7 +20,27 @@ export const CATEGORY_COLORS: Record<MarketCategory, string> = {
   Córners:   "bg-amber-500/15   text-amber-400",
   Tarjetas:  "bg-rose-500/15    text-rose-400",
   Faltas:    "bg-violet-500/15  text-violet-400",
+  Marcador:  "bg-fuchsia-500/15 text-fuchsia-400",
 };
+
+/**
+ * Top N marcadores exactos como mercados (cuota alta, probabilidad baja).
+ * Van aparte de buildMarketRows para que no entren al filtro de seguridad
+ * del panel ni a las combinadas.
+ */
+export function topExactScores(
+  poisson: PoissonData | undefined,
+  homeTeam: string,
+  awayTeam: string,
+  n = 3,
+): MarketRow[] {
+  if (!poisson?.exact_score?.length) return [];
+  return poisson.exact_score.slice(0, n).map((s) => ({
+    market: `Marcador exacto ${s.score} (${homeTeam} ${s.home}-${s.away} ${awayTeam})`,
+    category: "Marcador" as const,
+    prob: s.prob,
+  }));
+}
 
 /** Cuota mínima para que la apuesta tenga valor: 100 / probabilidad. */
 export function minOdds(prob: number): number {
