@@ -67,17 +67,46 @@ def _team_rates(stats: dict, prior_scored: float, prior_conceded: float) -> tupl
     return rate_scored, rate_conceded
 
 
-def _calc_lambdas(home_stats: dict, away_stats: dict) -> tuple[float, float]:
+# Peso del Elo al repartir los goles esperados entre los dos equipos.
+# 0 = solo forma reciente (comportamiento viejo); 1 = solo Elo.
+ELO_BLEND = 0.5
+# Ventaja de localía expresada en puntos Elo (0 en cancha neutral).
+HOME_ADV_ELO = 65
+
+
+def _calc_lambdas(home_stats: dict, away_stats: dict, neutral: bool = False) -> tuple[float, float]:
     """
     Calcula λ_home y λ_away a partir de los stats de cada equipo.
-    Usa los partidos jugados reales y ajusta por ventaja de localía.
+    - La forma reciente (goles marcados/recibidos) fija el TOTAL de goles esperados.
+    - Ese total se reparte entre los dos equipos mezclando forma + Elo (fuerza
+      relativa), para que el favorito según Elo reciba más xG aunque su forma
+      reciente de goles sea pobre.
+    - En cancha neutral (p.ej. Mundial) no se aplica ventaja de localía.
     """
     h_scored, h_conceded = _team_rates(home_stats, LEAGUE_AVG_SCORED,   LEAGUE_AVG_CONCEDED)
     a_scored, a_conceded = _team_rates(away_stats, LEAGUE_AVG_CONCEDED, LEAGUE_AVG_SCORED)
 
-    # λ = promedio de ataque × factor defensivo del rival (Dixon-Coles simplificado)
-    lam_h = ((h_scored + a_conceded) / 2) * HOME_ADVANTAGE
+    home_mult = 1.0 if neutral else HOME_ADVANTAGE
+
+    # λ base por forma (Dixon-Coles simplificado)
+    lam_h = ((h_scored + a_conceded) / 2) * home_mult
     lam_a =  (a_scored + h_conceded) / 2
+
+    # ── Ajuste por Elo ────────────────────────────────────────────────────
+    # Si ambos equipos traen rating, se conserva el total de goles de la forma
+    # pero se reparte según una mezcla de forma + fuerza relativa (Elo).
+    elo_h = home_stats.get("elo")
+    elo_a = away_stats.get("elo")
+    if elo_h and elo_a:
+        total = lam_h + lam_a
+        if total > 0:
+            ha = 0 if neutral else HOME_ADV_ELO
+            d = (elo_h + ha) - elo_a
+            share_h_elo  = 1 / (1 + 10 ** (-d / 400))   # 0..1 según Elo
+            share_h_form = lam_h / total
+            share_h = (1 - ELO_BLEND) * share_h_form + ELO_BLEND * share_h_elo
+            lam_h = total * share_h
+            lam_a = total * (1 - share_h)
 
     # Acotar entre valores razonables (evitar λ=0 o extremos)
     lam_h = max(0.3, min(lam_h, 5.0))
@@ -203,18 +232,19 @@ def _expected_goals(lam_h: float, lam_a: float) -> dict:
 
 # ─── Función principal ────────────────────────────────────────────────────────
 
-def predict_poisson(home_stats: dict, away_stats: dict) -> dict:
+def predict_poisson(home_stats: dict, away_stats: dict, neutral: bool = False) -> dict:
     """
     Genera todos los mercados de apuesta basados en Poisson.
 
     Parámetros:
         home_stats / away_stats : dict con al menos
-            goals_scored_last5, goals_conceded_last5
+            goals_scored_last5, goals_conceded_last5 (y opcionalmente "elo")
+        neutral : True en partidos a cancha neutral (no se aplica localía)
 
     Retorna:
         dict con todos los mercados listos para el frontend.
     """
-    lam_h, lam_a = _calc_lambdas(home_stats, away_stats)
+    lam_h, lam_a = _calc_lambdas(home_stats, away_stats, neutral=neutral)
     matrix = _score_matrix(lam_h, lam_a)
 
     return {

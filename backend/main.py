@@ -317,7 +317,9 @@ def post_prediction(body: dict):
     # ── Mercados Poisson (siempre se calculan) ───────────────────────────────
     poisson_home = home_stats or {"goals_scored_last5": 7, "goals_conceded_last5": 6}
     poisson_away = away_stats or {"goals_scored_last5": 6, "goals_conceded_last5": 7}
-    result["poisson"] = predict_poisson(poisson_home, poisson_away)
+    # El Mundial se juega en cancha neutral: sin ventaja de localía
+    neutral_venue = league == "Mundial FIFA"
+    result["poisson"] = predict_poisson(poisson_home, poisson_away, neutral=neutral_venue)
 
     # ── Córners y tarjetas (StatsBomb) ───────────────────────────────────────
     result["corners_cards"] = predict_corners_cards(home, away)
