@@ -174,6 +174,92 @@ def get_injuries(team_id: int) -> list[dict]:
     return injured
 
 
+# Alias football-data.org → API-Sports para selecciones cuyo nombre difiere.
+# Clave y valor normalizados (minúsculas, sin acentos).
+_TEAM_ALIASES = {
+    "united states":        "usa",
+    "bosnia-herzegovina":   "bosnia",
+    "bosnia and herzegovina": "bosnia",
+    "cape verde islands":   "cape verde",
+    "congo dr":             "congo dr",
+    "dr congo":             "congo dr",
+    "south korea":          "korea republic",
+    "ivory coast":          "ivory coast",
+    "czech republic":       "czechia",
+}
+
+
+def _norm_team(s: str) -> str:
+    """minúsculas, sin acentos, sin sufijos, con alias aplicado."""
+    import unicodedata
+    s = (s or "").lower().strip()
+    s = "".join(c for c in unicodedata.normalize("NFKD", s) if not unicodedata.combining(c))
+    s = _clean_name(s)
+    return _TEAM_ALIASES.get(s, s)
+
+
+def get_fixture_stats(home_name: str, away_name: str, date: str) -> dict | None:
+    """
+    Best-effort: busca el partido terminado en API-Sports por fecha y nombres,
+    y devuelve los totales reales de córners, tarjetas amarillas y faltas.
+
+    Retorna {"corners": int, "yellow_cards": int, "fouls": int} o None si no se
+    encuentra / la cuota está agotada. Consume cuota (2 llamadas: fixtures + stats).
+    """
+    if _quota["exhausted"]:
+        return None
+
+    # 1. Listar los partidos de ese día y localizar el nuestro por nombre
+    day = (date or "")[:10]
+    if not day:
+        return None
+
+    data = _get(f"/fixtures?date={day}")
+    if not data or not data.get("response"):
+        return None
+
+    h_want = _norm_team(home_name)
+    a_want = _norm_team(away_name)
+
+    def _match(want: str, got: str) -> bool:
+        return bool(want) and bool(got) and (want in got or got in want)
+
+    fixture_id = None
+    for item in data["response"]:
+        teams = item.get("teams", {})
+        h = _norm_team(teams.get("home", {}).get("name", ""))
+        a = _norm_team(teams.get("away", {}).get("name", ""))
+        status = item.get("fixture", {}).get("status", {}).get("short", "")
+        if _match(h_want, h) and _match(a_want, a) and status in ("FT", "AET", "PEN"):
+            fixture_id = item.get("fixture", {}).get("id")
+            break
+
+    if not fixture_id:
+        return None
+
+    # 2. Estadísticas del partido (suma de ambos equipos)
+    stats = _get(f"/fixtures/statistics?fixture={fixture_id}")
+    if not stats or not stats.get("response"):
+        return None
+
+    totals = {"corners": 0, "yellow_cards": 0, "fouls": 0}
+    found = False
+    label_map = {
+        "Corner Kicks":  "corners",
+        "Fouls":         "fouls",
+        "Yellow Cards":  "yellow_cards",
+    }
+    for team_block in stats["response"]:
+        for s in team_block.get("statistics", []):
+            key = label_map.get(s.get("type", ""))
+            val = s.get("value")
+            if key and isinstance(val, (int, float)):
+                totals[key] += int(val)
+                found = True
+
+    return totals if found else None
+
+
 def get_squad(team_id: int) -> list[dict]:
     """Retorna la plantilla completa del equipo."""
     data = _get(f"/players/squads?team={team_id}")

@@ -379,6 +379,34 @@ def post_prediction(body: dict):
                 "away_elo":           away_stats.get("elo", 1500),
             }
 
+        # ── Snapshot de mercados predichos (goles, BTTS, córners, tarjetas, faltas) ──
+        poisson = result.get("poisson", {}) or {}
+        xg      = poisson.get("expected_goals", {}) or {}
+        ou      = poisson.get("over_under", {}) or {}
+        cc      = result.get("corners_cards", {}) or {}
+        cc_cor  = cc.get("corners", {}) or {}
+        cc_yel  = cc.get("yellow_cards", {}) or {}
+        cc_fou  = cc.get("fouls", {}) or {}
+
+        xg_home  = xg.get("home")
+        xg_away  = xg.get("away")
+        xg_total = xg.get("total")
+
+        markets_snapshot = {
+            "xg_home":  xg_home,
+            "xg_away":  xg_away,
+            "xg_total": xg_total,
+            "over_under": {
+                k: ou.get(k) for k in
+                ("over_0.5", "over_1.5", "over_2.5", "over_3.5", "over_4.5")
+                if ou.get(k) is not None
+            },
+            "btts_yes":          poisson.get("btts", {}).get("yes"),
+            "corners_expected":  cc_cor.get("expected_total"),
+            "yellow_cards_expected": cc_yel.get("expected_total"),
+            "fouls_expected":    cc_fou.get("expected_total"),
+        }
+
         pred_record = {
             "home_team":      home,
             "away_team":      away,
@@ -392,14 +420,16 @@ def post_prediction(body: dict):
             "pred_winner":    pred_winner,
             "confidence":     confidence,
             "model_used":     result.get("model", "hybrid"),
-            "xg_home":        result.get("poisson", {}).get("xg_home"),
-            "xg_away":        result.get("poisson", {}).get("xg_away"),
+            "xg_home":        xg_home,
+            "xg_away":        xg_away,
             # IDs para búsqueda automática de resultados
             "fd_home_id":     int(home_id) if home_id else None,
             "fd_away_id":     int(away_id) if away_id else None,
             # Features para reentrenamiento incremental
             "features_json":  features_snapshot,
             "model_version":  result.get("model", "rule-based"),
+            # Mercados predichos (para medir acierto por tipo de mercado)
+            "markets_json":   markets_snapshot,
         }
         saved = sbc.save_prediction(pred_record)
         if saved:
@@ -421,6 +451,12 @@ def list_predictions(limit: int = 50, offset: int = 0):
 def prediction_stats():
     """Estadísticas globales de precisión del modelo."""
     return sbc.get_stats()
+
+
+@app.get("/predictions/market-stats")
+def prediction_market_stats():
+    """Precisión del modelo desglosada por tipo de mercado (1X2, goles, BTTS, córners, tarjetas)."""
+    return sbc.get_market_stats()
 
 
 @app.post("/predictions/check-results")

@@ -44,10 +44,13 @@ def save_prediction(data: dict) -> dict | None:
     return None
 
 
-def update_result(prediction_id: int, home_goals: int, away_goals: int) -> dict | None:
+def update_result(prediction_id: int, home_goals: int, away_goals: int,
+                  corners: int | None = None, yellow_cards: int | None = None,
+                  fouls: int | None = None) -> dict | None:
     """
     Actualiza el resultado real de una predicción.
     El trigger de Supabase calcula was_correct automáticamente.
+    corners / yellow_cards / fouls son opcionales (best-effort vía API-Sports).
     """
     sb = get_client()
     if not sb:
@@ -61,12 +64,20 @@ def update_result(prediction_id: int, home_goals: int, away_goals: int) -> dict 
     else:
         result_actual = "Empate"
 
+    payload = {
+        "result_home_goals": home_goals,
+        "result_away_goals": away_goals,
+        "result_actual":     result_actual,
+    }
+    if corners is not None:
+        payload["result_corners"] = corners
+    if yellow_cards is not None:
+        payload["result_yellow_cards"] = yellow_cards
+    if fouls is not None:
+        payload["result_fouls"] = fouls
+
     try:
-        result = sb.table("predictions").update({
-            "result_home_goals": home_goals,
-            "result_away_goals": away_goals,
-            "result_actual":     result_actual,
-        }).eq("id", prediction_id).execute()
+        result = sb.table("predictions").update(payload).eq("id", prediction_id).execute()
         if result.data:
             rec = result.data[0]
             print(f"[Supabase] Resultado actualizado id={prediction_id} | correcto={rec.get('was_correct')}")
@@ -146,3 +157,92 @@ def get_stats() -> dict:
     except Exception as e:
         print(f"[Supabase] Error calculando stats: {e}")
         return {}
+
+
+def get_market_stats() -> dict:
+    """
+    Precisión del modelo desglosada por tipo de mercado.
+
+    - 1X2, Over/Under 2.5 y BTTS: se evalúan con el marcador real (gratis).
+    - Córners y tarjetas: error medio (MAE) entre lo esperado y lo real,
+      solo donde hay datos reales capturados vía API-Sports.
+    """
+    sb = get_client()
+    if not sb:
+        return {}
+    try:
+        rows = (sb.table("predictions")
+                  .select("pred_winner, result_actual, was_correct, markets_json, "
+                          "result_home_goals, result_away_goals, "
+                          "result_corners, result_yellow_cards, result_fouls")
+                  .not_.is_("result_actual", "null")
+                  .execute()).data or []
+    except Exception as e:
+        print(f"[Supabase] Error en market stats: {e}")
+        return {}
+
+    def acc(c: int, n: int):
+        return round(c / n * 100, 1) if n else None
+
+    # ── 1X2 ──────────────────────────────────────────────────────────────
+    x12_n = sum(1 for r in rows if r.get("was_correct") is not None)
+    x12_c = sum(1 for r in rows if r.get("was_correct"))
+
+    # ── Over/Under 2.5 y BTTS (derivados del marcador) ───────────────────
+    ou_n = ou_c = btts_n = btts_c = 0
+    # ── Córners / tarjetas (error medio) ─────────────────────────────────
+    cor_err: list[float] = []
+    cor_line_n = cor_line_c = 0
+    yel_err: list[float] = []
+    yel_line_n = yel_line_c = 0
+
+    for r in rows:
+        hg, ag = r.get("result_home_goals"), r.get("result_away_goals")
+        mk = r.get("markets_json") or {}
+
+        if hg is not None and ag is not None:
+            total_goals = hg + ag
+            ou = mk.get("over_under", {}) or {}
+            p_over = ou.get("over_2.5")
+            if p_over is not None:
+                ou_n += 1
+                pred_over = p_over >= 50
+                real_over = total_goals > 2.5
+                if pred_over == real_over:
+                    ou_c += 1
+
+            p_btts = mk.get("btts_yes")
+            if p_btts is not None:
+                btts_n += 1
+                pred_yes = p_btts >= 50
+                real_yes = hg > 0 and ag > 0
+                if pred_yes == real_yes:
+                    btts_c += 1
+
+        rc = r.get("result_corners")
+        ec = mk.get("corners_expected")
+        if rc is not None and ec is not None:
+            cor_err.append(abs(rc - ec))
+            cor_line_n += 1
+            if (ec > 9.5) == (rc > 9.5):
+                cor_line_c += 1
+
+        ry = r.get("result_yellow_cards")
+        ey = mk.get("yellow_cards_expected")
+        if ry is not None and ey is not None:
+            yel_err.append(abs(ry - ey))
+            yel_line_n += 1
+            if (ey > 3.5) == (ry > 3.5):
+                yel_line_c += 1
+
+    mae = lambda lst: round(sum(lst) / len(lst), 2) if lst else None
+
+    return {
+        "result_1x2":  {"n": x12_n, "accuracy": acc(x12_c, x12_n)},
+        "over_under_25": {"n": ou_n, "accuracy": acc(ou_c, ou_n)},
+        "btts":        {"n": btts_n, "accuracy": acc(btts_c, btts_n)},
+        "corners":     {"n": cor_line_n, "line_9_5_accuracy": acc(cor_line_c, cor_line_n),
+                        "avg_error": mae(cor_err)},
+        "yellow_cards": {"n": yel_line_n, "line_3_5_accuracy": acc(yel_line_c, yel_line_n),
+                        "avg_error": mae(yel_err)},
+    }

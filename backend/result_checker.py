@@ -18,6 +18,7 @@ import requests
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 import supabase_client as sbc
+import api_sports as asports
 
 load_dotenv()
 
@@ -135,7 +136,20 @@ def check_and_update_pending() -> int:
         result = _fetch_match_result(home_id, away_id, match_date, home_name, away_name)
 
         if result:
-            ok = sbc.update_result(pid, result["home_goals"], result["away_goals"])
+            # Best-effort: estadísticas reales (córners/tarjetas/faltas) vía API-Sports.
+            # Si la cuota está agotada o no se encuentra, se guarda solo el marcador.
+            stats = None
+            try:
+                stats = asports.get_fixture_stats(home_name, away_name, match_date)
+            except Exception as e:
+                print(f"[ResultChecker] Sin stats de API-Sports para #{pid}: {e}")
+
+            ok = sbc.update_result(
+                pid, result["home_goals"], result["away_goals"],
+                corners=(stats or {}).get("corners"),
+                yellow_cards=(stats or {}).get("yellow_cards"),
+                fouls=(stats or {}).get("fouls"),
+            )
             if ok:
                 # Marcar como actualizado automáticamente
                 try:
