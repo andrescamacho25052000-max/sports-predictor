@@ -337,6 +337,83 @@ function StatsBar({
   );
 }
 
+/* ── Precisión por tipo de mercado ──────────────────────────────────────── */
+function MarketAccuracy({ market }: { market: any }) {
+  if (!market) return null;
+
+  const accColor = (a: number | null) =>
+    a == null ? "text-white/40" : a >= 60 ? "text-emerald-400" : a >= 50 ? "text-yellow-400" : "text-orange-400";
+
+  // Mercados de acierto directo (sí/no)
+  const hitRate = [
+    { label: "Ganador (1X2)", data: market.result_1x2 },
+    { label: "Más/Menos 2.5 goles", data: market.over_under_25 },
+    { label: "Ambos marcan", data: market.btts },
+  ];
+
+  // Mercados continuos (error medio + acierto sobre línea)
+  const cont = [
+    { label: "Córners", data: market.corners, line: "9.5", lineKey: "line_9_5_accuracy", unit: "córners" },
+    { label: "Tarjetas", data: market.yellow_cards, line: "3.5", lineKey: "line_3_5_accuracy", unit: "amarillas" },
+  ];
+
+  const anyData = hitRate.some((h) => h.data?.n > 0) || cont.some((c) => c.data?.n > 0);
+  if (!anyData) return null;
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Target size={16} className="text-emerald-400" />
+        <span className="text-sm font-semibold text-white">Precisión por mercado</span>
+        <span className="text-xs text-white/30">— en qué acierta el modelo</span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        {hitRate.map(({ label, data }) => (
+          <div key={label} className="bg-white/5 rounded-xl p-3 text-center">
+            <div className={`text-2xl font-bold ${accColor(data?.accuracy)}`}>
+              {data?.accuracy != null ? `${data.accuracy}%` : "—"}
+            </div>
+            <div className="text-xs text-white/50 mt-1">{label}</div>
+            <div className="text-xs text-white/25 mt-0.5">{data?.n || 0} evaluados</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {cont.map(({ label, data, line, lineKey, unit }) => (
+          <div key={label} className="bg-white/5 rounded-xl p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-white/70">{label}</span>
+              <span className="text-xs text-white/25">{data?.n || 0} con datos</span>
+            </div>
+            <div className="flex items-end gap-4 mt-2">
+              <div>
+                <div className={`text-xl font-bold ${accColor(data?.[lineKey])}`}>
+                  {data?.[lineKey] != null ? `${data[lineKey]}%` : "—"}
+                </div>
+                <div className="text-xs text-white/40">acierto línea {line}</div>
+              </div>
+              <div>
+                <div className="text-xl font-bold text-white/80">
+                  {data?.avg_error != null ? `±${data.avg_error}` : "—"}
+                </div>
+                <div className="text-xs text-white/40">error medio</div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-xs text-white/30 mt-3 leading-relaxed">
+        1X2, goles y &quot;ambos marcan&quot; se miden con el marcador final. Córners y tarjetas
+        requieren datos de API-Sports (se capturan cuando hay cuota disponible). El error medio
+        es cuántos {cont[0].unit}/{cont[1].unit} se desvía la predicción del valor real.
+      </p>
+    </div>
+  );
+}
+
 /* ── Panel de evolución del modelo ──────────────────────────────────────── */
 function ModelEvolution({ evolution }: { evolution: any }) {
   if (!evolution || !evolution.history?.length) return null;
@@ -383,6 +460,7 @@ export default function HistoryPage() {
     accuracy: number | null;
   } | null>(null);
   const [evolution, setEvolution] = useState<any>(null);
+  const [marketStats, setMarketStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [retraining, setRetraining] = useState(false);
@@ -410,17 +488,20 @@ export default function HistoryPage() {
   async function load() {
     setLoading(true);
     try {
-      const [predRes, statsRes, evoRes] = await Promise.all([
+      const [predRes, statsRes, evoRes, mktRes] = await Promise.all([
         fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions?limit=100`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/stats`),
         fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/model-evolution`),
+        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/market-stats`),
       ]);
       const predData  = await predRes.json();
       const statsData = await statsRes.json();
       const evoData   = await evoRes.json();
+      const mktData   = await mktRes.json();
       setPredictions(predData.predictions || []);
       setStats(statsData);
       setEvolution(evoData);
+      setMarketStats(mktData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -519,6 +600,9 @@ export default function HistoryPage() {
             accuracy={stats.accuracy}
           />
         )}
+
+        {/* Precisión por mercado */}
+        <MarketAccuracy market={marketStats} />
 
         {/* Evolución del modelo */}
         <ModelEvolution evolution={evolution} />
