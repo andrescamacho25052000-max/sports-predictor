@@ -69,6 +69,7 @@ export interface PoissonData {
   btts:             { yes: number; no: number };
   exact_score:      { score: string; home: number; away: number; prob: number }[];
   half_time:        { home_win: number; draw: number; away_win: number };
+  handicap?:        Record<string, number>;
   home_goals:       Record<string, number>;
   away_goals:       Record<string, number>;
   home_clean_sheet: { yes: number; no: number };

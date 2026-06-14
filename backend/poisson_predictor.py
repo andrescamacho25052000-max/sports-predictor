@@ -209,6 +209,37 @@ def _market_team_goals(lam: float, label: str) -> dict:
     }
 
 
+def _market_handicap(matrix: list) -> dict:
+    """
+    Hándicap asiático de línea media (sin empate/reembolso) para las líneas
+    más usadas. Se deriva de la matriz de marcadores sumando por margen
+    (goles_local − goles_visitante).
+    """
+    margin: dict[int, float] = {}
+    for h in range(MAX_GOALS + 1):
+        for a in range(MAX_GOALS + 1):
+            margin[h - a] = margin.get(h - a, 0.0) + matrix[h][a]
+
+    def ge(x: int) -> float:   # P(margen ≥ x)  → local cubre el hándicap
+        return round(sum(p for m, p in margin.items() if m >= x) * 100, 1)
+
+    def le(x: int) -> float:   # P(margen ≤ x)  → visitante cubre el hándicap
+        return round(sum(p for m, p in margin.items() if m <= x) * 100, 1)
+
+    return {
+        # Local con desventaja (debe ganar por margen) o ventaja (colchón)
+        "home_-2.5": ge(3),    # gana por 3+
+        "home_-1.5": ge(2),    # gana por 2+
+        "home_+1.5": ge(-1),   # no pierde por 2+
+        "home_+2.5": ge(-2),   # no pierde por 3+
+        # Visitante con desventaja o ventaja
+        "away_-2.5": le(-3),   # gana por 3+
+        "away_-1.5": le(-2),   # gana por 2+
+        "away_+1.5": le(1),    # no pierde por 2+
+        "away_+2.5": le(2),    # no pierde por 3+
+    }
+
+
 def _market_clean_sheet(lam_opponent: float) -> dict:
     """
     Probabilidad de portería a cero para un equipo
@@ -254,6 +285,7 @@ def predict_poisson(home_stats: dict, away_stats: dict, neutral: bool = False) -
         "btts":            _market_btts(matrix),
         "exact_score":     _market_exact_score(matrix, top_n=10),
         "half_time":       _market_ht(lam_h, lam_a),
+        "handicap":        _market_handicap(matrix),
         "home_goals":      _market_team_goals(lam_h, "home"),
         "away_goals":      _market_team_goals(lam_a, "away"),
         "home_clean_sheet": _market_clean_sheet(lam_a),

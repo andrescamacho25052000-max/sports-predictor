@@ -6,7 +6,7 @@ import { PoissonData, CornerCardsData } from "@/lib/api";
  */
 
 export type MarketCategory =
-  | "Resultado" | "Goles" | "Córners" | "Tarjetas" | "Faltas" | "Marcador";
+  | "Resultado" | "Goles" | "Córners" | "Tarjetas" | "Faltas" | "Marcador" | "Hándicap";
 
 export interface MarketRow {
   market: string;
@@ -21,6 +21,7 @@ export const CATEGORY_COLORS: Record<MarketCategory, string> = {
   Tarjetas:  "bg-rose-500/15    text-rose-400",
   Faltas:    "bg-violet-500/15  text-violet-400",
   Marcador:  "bg-fuchsia-500/15 text-fuchsia-400",
+  Hándicap:  "bg-cyan-500/15    text-cyan-400",
 };
 
 /**
@@ -111,6 +112,24 @@ export function buildMarketRows(
       { market: `Empate al descanso`,                category: "Resultado", prob: ht.draw },
       { market: `${homeTeam} o empate al descanso`,  category: "Resultado", prob: ht.home_win + ht.draw },
     );
+
+    // ── Hándicap asiático (derivado de la matriz de marcadores) ──────────
+    const hc = poisson.handicap;
+    if (hc) {
+      const hcDefs: [string, string][] = [
+        ["home_-1.5", `${homeTeam} −1.5 (gana por 2+)`],
+        ["home_-2.5", `${homeTeam} −2.5 (gana por 3+)`],
+        ["home_+1.5", `${homeTeam} +1.5 (no pierde por 2+)`],
+        ["home_+2.5", `${homeTeam} +2.5 (no pierde por 3+)`],
+        ["away_-1.5", `${awayTeam} −1.5 (gana por 2+)`],
+        ["away_-2.5", `${awayTeam} −2.5 (gana por 3+)`],
+        ["away_+1.5", `${awayTeam} +1.5 (no pierde por 2+)`],
+        ["away_+2.5", `${awayTeam} +2.5 (no pierde por 3+)`],
+      ];
+      for (const [key, label] of hcDefs) {
+        if (hc[key] != null) rows.push({ market: label, category: "Hándicap", prob: hc[key] });
+      }
+    }
   }
 
   if (cornersCards) {

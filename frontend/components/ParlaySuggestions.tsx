@@ -22,7 +22,9 @@ interface Props {
  */
 function pickLegs(rows: MarketRow[]): MarketRow[] {
   const eligible = rows
-    .filter((r) => r.prob >= 60 && r.prob <= 92)
+    // El hándicap se solapa con el resultado 1X2: lo dejamos solo en el panel
+    // de valor, no como pata de combinada para no correlacionar selecciones.
+    .filter((r) => r.category !== "Hándicap" && r.prob >= 60 && r.prob <= 92)
     .sort((a, b) => b.prob - a.prob);
 
   const seen = new Set<string>();
