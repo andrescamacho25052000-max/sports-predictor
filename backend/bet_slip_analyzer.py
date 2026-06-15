@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL = "claude-opus-4-8"
+# Haiku: ~10× más barato que Opus y muy capaz leyendo cupones.
+MODEL = "claude-haiku-4-5"
 _client = None
 
 
