@@ -225,6 +225,10 @@ def search_teams(q: str = ""):
 
 @app.post("/predict")
 def post_prediction(body: dict):
+    return run_full_prediction(body)
+
+
+def run_full_prediction(body: dict):
     home   = body.get("home_team")
     away   = body.get("away_team")
     league = body.get("league", "")
@@ -440,6 +444,66 @@ def post_prediction(body: dict):
         print(f"[Supabase] No se pudo guardar prediccion: {e}")
 
     return result
+
+
+@app.post("/analyze-bet-slip")
+def analyze_bet_slip(body: dict):
+    """
+    Recibe la imagen de un cupón (base64) y la evalúa contra el modelo.
+    Body: { "image": "<base64>", "media_type": "image/png" }
+    """
+    import bet_slip_analyzer as bsa
+    import football_api as fapi
+
+    image = body.get("image")
+    media_type = body.get("media_type", "image/png")
+    if not image:
+        raise HTTPException(status_code=400, detail="Se requiere 'image' (base64)")
+
+    try:
+        extracted = bsa.extract_legs(image, media_type)
+    except RuntimeError as e:
+        # Falta la API key de Anthropic
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"No se pudo leer la imagen: {e}")
+
+    legs = extracted.get("legs", []) or []
+    if not legs:
+        raise HTTPException(status_code=422, detail="No se detectaron selecciones en la imagen")
+
+    # Correr la predicción de cada partido único
+    predictions: dict = {}
+    for leg in legs:
+        h, a = leg.get("home"), leg.get("away")
+        if not h or not a or h == a:
+            continue
+        key = f"{h} vs {a}"
+        if key in predictions:
+            continue
+        pred_body = {
+            "home_team": h, "away_team": a,
+            "league": leg.get("league") or "Mundial FIFA",
+            "home_id": fapi.resolve_fd_id(h),
+            "away_id": fapi.resolve_fd_id(a),
+        }
+        try:
+            predictions[key] = run_full_prediction(pred_body)
+        except Exception as e:
+            print(f"[BetSlip] No se pudo predecir {key}: {e}")
+
+    if not predictions:
+        raise HTTPException(status_code=422, detail="No se pudieron predecir los partidos del cupón")
+
+    try:
+        analysis = bsa.map_and_analyze(
+            legs, predictions,
+            extracted.get("total_odds"), extracted.get("stake"),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"No se pudo analizar el cupón: {e}")
+
+    return analysis
 
 
 @app.get("/predictions")

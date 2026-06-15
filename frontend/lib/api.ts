@@ -155,6 +155,33 @@ export async function fetchMatches(league: string): Promise<Match[]> {
   return data.matches;
 }
 
+export interface BetSlipLeg {
+  match: string;
+  market: string;
+  prob: number;
+  min_odds: number;
+  note?: string;
+}
+
+export interface BetSlipAnalysis {
+  legs: BetSlipLeg[];
+  combined_prob: number;
+  fair_odds: number;
+  offered_odds: number | null;
+  value: "negativo" | "justo" | "positivo";
+  verdict: string;
+  weakest_leg?: string;
+  stake?: number | null;
+}
+
+export async function analyzeBetSlip(imageBase64: string, mediaType: string): Promise<BetSlipAnalysis> {
+  const { data } = await api.post("/analyze-bet-slip", {
+    image: imageBase64,
+    media_type: mediaType,
+  }, { timeout: 120000 });
+  return data;
+}
+
 export async function fetchPrediction(match: Match, league: string): Promise<Prediction> {
   const { data } = await api.post("/predict", {
     home_team:  match.home,

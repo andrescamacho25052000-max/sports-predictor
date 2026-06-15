@@ -366,6 +366,30 @@ def _get_national_form(team_id: int) -> dict | None:
     return dict(entry) if entry else None
 
 
+def national_team_names() -> list[str]:
+    """Lista de nombres de selecciones con forma precalculada (para el analizador)."""
+    _get_national_form(0)  # fuerza la carga del cache
+    return sorted((v.get("name") or "") for v in (_national_form_cache or {}).values())
+
+
+def resolve_fd_id(name: str) -> int | None:
+    """nombre de selección -> football-data team_id (exacto o por inclusión)."""
+    _get_national_form(0)
+    if not _national_form_cache:
+        return None
+    q = (name or "").strip().lower()
+    if not q:
+        return None
+    for tid, v in _national_form_cache.items():
+        if (v.get("name") or "").lower() == q:
+            return int(tid)
+    for tid, v in _national_form_cache.items():
+        nm = (v.get("name") or "").lower()
+        if nm and (q in nm or nm in q):
+            return int(tid)
+    return None
+
+
 def _empty_form() -> dict:
     return {
         "wins_last5": 2, "draws_last5": 1, "losses_last5": 2,

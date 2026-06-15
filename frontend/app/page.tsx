@@ -3,11 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { TrendingUp, Search, Sliders, History } from "lucide-react";
+import { TrendingUp, Search, Sliders, History, ScanLine } from "lucide-react";
 import Link from "next/link";
 import TeamSearch      from "@/components/TeamSearch";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import CustomMatchForm from "@/components/CustomMatchForm";
+import BetSlipAnalyzer from "@/components/BetSlipAnalyzer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UpcomingMatch } from "@/lib/api";
 
@@ -96,6 +97,10 @@ export default function Home() {
                 <Sliders className="w-4 h-4" />
                 <span className="hidden xs:inline">Partido </span>personalizado
               </TabsTrigger>
+              <TabsTrigger value="slip">
+                <ScanLine className="w-4 h-4" />
+                <span className="hidden xs:inline">Analizar </span>cupón
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="search">
@@ -107,6 +112,10 @@ export default function Home() {
 
             <TabsContent value="custom">
               <CustomMatchForm onAnalyze={goToMatch} />
+            </TabsContent>
+
+            <TabsContent value="slip">
+              <BetSlipAnalyzer />
             </TabsContent>
           </Tabs>
         </motion.div>
