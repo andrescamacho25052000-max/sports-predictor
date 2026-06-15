@@ -22,6 +22,12 @@ HOME_ADVANTAGE = 1.15
 LEAGUE_AVG_SCORED   = 1.45   # goles del local por partido
 LEAGUE_AVG_CONCEDED = 1.15   # goles del visitante por partido
 
+# Calibración para fútbol de selecciones / Mundial: marca menos goles que las
+# ligas de clubes con las que se calibró el prior. Sin esto el modelo sobre-
+# estima los goles (validado: 4 de 5 partidos de grupos terminaron Under 2.5
+# mientras el modelo promediaba 2.96 goles esperados vs 2.4 reales).
+GOALS_DAMP_NEUTRAL = 0.90
+
 # Máximo de goles que modelamos por equipo (7 es suficiente: P(>7) < 0.01%)
 MAX_GOALS = 7
 
@@ -107,6 +113,12 @@ def _calc_lambdas(home_stats: dict, away_stats: dict, neutral: bool = False) -> 
             share_h = (1 - ELO_BLEND) * share_h_form + ELO_BLEND * share_h_elo
             lam_h = total * share_h
             lam_a = total * (1 - share_h)
+
+    # Calibración de goles para selecciones (Mundial = cancha neutral):
+    # el entorno goleador es más bajo que en ligas de clubes.
+    if neutral:
+        lam_h *= GOALS_DAMP_NEUTRAL
+        lam_a *= GOALS_DAMP_NEUTRAL
 
     # Acotar entre valores razonables (evitar λ=0 o extremos)
     lam_h = max(0.3, min(lam_h, 5.0))
