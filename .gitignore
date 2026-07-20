@@ -30,6 +30,16 @@ Thumbs.db
 backend/ml/data/*.json
 backend/ml/data/international_results.csv
 
+# ML — artefactos de modelo pequeños que SI se versionan (necesarios en produccion)
+!backend/ml/data/dixon_coles.json
+!backend/ml/data/dixon_coles_national.json
+!backend/ml/data/ensemble_config.json
+!backend/ml/data/elo_ratings.json
+!backend/ml/data/national_form.json
+!backend/ml/data/nba_elo.json
+!backend/ml/data/nba_team_stats.json
+!backend/ml/data/nba_meta.json
+
 # Logs locales
 backend/uvicorn.log
 backend/uvicorn_err.log

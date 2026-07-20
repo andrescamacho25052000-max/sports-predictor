@@ -1,0 +1,182 @@
+{
+  "Denver Nuggets": {
+    "pts_for_avg": 118.29,
+    "pts_against_avg": 116.38,
+    "games": 101,
+    "logo": "https://media.api-sports.io/basketball/teams/139.png"
+  },
+  "Boston Celtics": {
+    "pts_for_avg": 115.37,
+    "pts_against_avg": 106.28,
+    "games": 98,
+    "logo": "https://media.api-sports.io/basketball/teams/133.png"
+  },
+  "Los Angeles Lakers": {
+    "pts_for_avg": 112.12,
+    "pts_against_avg": 112.3,
+    "games": 93,
+    "logo": "https://media.api-sports.io/basketball/teams/145.png"
+  },
+  "Minnesota Timberwolves": {
+    "pts_for_avg": 113.84,
+    "pts_against_avg": 109.29,
+    "games": 102,
+    "logo": "https://media.api-sports.io/basketball/teams/149.png"
+  },
+  "Los Angeles Clippers": {
+    "pts_for_avg": 112.16,
+    "pts_against_avg": 107.56,
+    "games": 94,
+    "logo": "https://media.api-sports.io/basketball/teams/144.png"
+  },
+  "Golden State Warriors": {
+    "pts_for_avg": 112.75,
+    "pts_against_avg": 109.3,
+    "games": 100,
+    "logo": "https://media.api-sports.io/basketball/teams/141.png"
+  },
+  "Charlotte Hornets": {
+    "pts_for_avg": 105.49,
+    "pts_against_avg": 113.91,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/135.png"
+  },
+  "New York Knicks": {
+    "pts_for_avg": 114.78,
+    "pts_against_avg": 111.13,
+    "games": 104,
+    "logo": "https://media.api-sports.io/basketball/teams/151.png"
+  },
+  "Toronto Raptors": {
+    "pts_for_avg": 111.0,
+    "pts_against_avg": 114.93,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/159.png"
+  },
+  "Washington Wizards": {
+    "pts_for_avg": 107.71,
+    "pts_against_avg": 120.24,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/161.png"
+  },
+  "Detroit Pistons": {
+    "pts_for_avg": 114.39,
+    "pts_against_avg": 112.35,
+    "games": 93,
+    "logo": "https://media.api-sports.io/basketball/teams/140.png"
+  },
+  "Milwaukee Bucks": {
+    "pts_for_avg": 114.42,
+    "pts_against_avg": 113.37,
+    "games": 89,
+    "logo": "https://media.api-sports.io/basketball/teams/148.png"
+  },
+  "Phoenix Suns": {
+    "pts_for_avg": 113.46,
+    "pts_against_avg": 116.38,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/155.png"
+  },
+  "New Orleans Pelicans": {
+    "pts_for_avg": 109.52,
+    "pts_against_avg": 118.85,
+    "games": 85,
+    "logo": "https://media.api-sports.io/basketball/teams/150.png"
+  },
+  "Orlando Magic": {
+    "pts_for_avg": 104.88,
+    "pts_against_avg": 105.33,
+    "games": 90,
+    "logo": "https://media.api-sports.io/basketball/teams/153.png"
+  },
+  "Dallas Mavericks": {
+    "pts_for_avg": 113.9,
+    "pts_against_avg": 114.85,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/138.png"
+  },
+  "Memphis Grizzlies": {
+    "pts_for_avg": 120.28,
+    "pts_against_avg": 116.94,
+    "games": 93,
+    "logo": "https://media.api-sports.io/basketball/teams/146.png"
+  },
+  "San Antonio Spurs": {
+    "pts_for_avg": 113.86,
+    "pts_against_avg": 116.62,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/158.png"
+  },
+  "Oklahoma City Thunder": {
+    "pts_for_avg": 119.09,
+    "pts_against_avg": 107.42,
+    "games": 107,
+    "logo": "https://media.api-sports.io/basketball/teams/152.png"
+  },
+  "Utah Jazz": {
+    "pts_for_avg": 111.8,
+    "pts_against_avg": 120.92,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/160.png"
+  },
+  "Houston Rockets": {
+    "pts_for_avg": 114.23,
+    "pts_against_avg": 109.55,
+    "games": 91,
+    "logo": "https://media.api-sports.io/basketball/teams/142.png"
+  },
+  "Miami Heat": {
+    "pts_for_avg": 110.17,
+    "pts_against_avg": 110.52,
+    "games": 93,
+    "logo": "https://media.api-sports.io/basketball/teams/147.png"
+  },
+  "Cleveland Cavaliers": {
+    "pts_for_avg": 121.39,
+    "pts_against_avg": 112.41,
+    "games": 95,
+    "logo": "https://media.api-sports.io/basketball/teams/137.png"
+  },
+  "Chicago Bulls": {
+    "pts_for_avg": 117.7,
+    "pts_against_avg": 119.36,
+    "games": 88,
+    "logo": "https://media.api-sports.io/basketball/teams/136.png"
+  },
+  "Atlanta Hawks": {
+    "pts_for_avg": 117.67,
+    "pts_against_avg": 119.48,
+    "games": 86,
+    "logo": "https://media.api-sports.io/basketball/teams/132.png"
+  },
+  "Indiana Pacers": {
+    "pts_for_avg": 116.92,
+    "pts_against_avg": 114.7,
+    "games": 109,
+    "logo": "https://media.api-sports.io/basketball/teams/143.png"
+  },
+  "Brooklyn Nets": {
+    "pts_for_avg": 105.38,
+    "pts_against_avg": 112.12,
+    "games": 86,
+    "logo": "https://media.api-sports.io/basketball/teams/134.png"
+  },
+  "Sacramento Kings": {
+    "pts_for_avg": 114.82,
+    "pts_against_avg": 115.19,
+    "games": 88,
+    "logo": "https://media.api-sports.io/basketball/teams/157.png"
+  },
+  "Philadelphia 76ers": {
+    "pts_for_avg": 109.29,
+    "pts_against_avg": 115.6,
+    "games": 87,
+    "logo": "https://media.api-sports.io/basketball/teams/154.png"
+  },
+  "Portland Trail Blazers": {
+    "pts_for_avg": 110.84,
+    "pts_against_avg": 113.05,
+    "games": 85,
+    "logo": "https://media.api-sports.io/basketball/teams/156.png"
+  }
+}

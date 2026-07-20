@@ -1,0 +1,2834 @@
+{
+ "778": {
+  "name": "Algeria",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 12,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.3,
+  "elo": 1883.7,
+  "recent_matches": [
+   {
+    "opponent": "Nigeria",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-01-10"
+   },
+   {
+    "opponent": "Guatemala",
+    "goals_for": 7,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Uruguay",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Netherlands",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-03"
+   },
+   {
+    "opponent": "Bolivia",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-10"
+   }
+  ]
+ },
+ "762": {
+  "name": "Argentina",
+  "wins_last5": 5,
+  "draws_last5": 0,
+  "losses_last5": 0,
+  "goals_scored_last5": 14,
+  "goals_conceded_last5": 1,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.5,
+  "elo": 2188.8,
+  "recent_matches": [
+   {
+    "opponent": "Angola",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-14"
+   },
+   {
+    "opponent": "Mauritania",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Zambia",
+    "goals_for": 5,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Honduras",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Iceland",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-09"
+   }
+  ]
+ },
+ "779": {
+  "name": "Australia",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 9,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.6,
+  "elo": 1953.4,
+  "recent_matches": [
+   {
+    "opponent": "Cameroon",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Curaçao",
+    "goals_for": 5,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Mexico",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Switzerland",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Turkey",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "816": {
+  "name": "Austria",
+  "wins_last5": 4,
+  "draws_last5": 1,
+  "losses_last5": 0,
+  "goals_scored_last5": 10,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.5,
+  "elo": 1888.9,
+  "recent_matches": [
+   {
+    "opponent": "Cyprus",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-15"
+   },
+   {
+    "opponent": "Bosnia and Herzegovina",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "Ghana",
+    "goals_for": 5,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "South Korea",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Tunisia",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-01"
+   }
+  ]
+ },
+ "805": {
+  "name": "Belgium",
+  "wins_last5": 3,
+  "draws_last5": 2,
+  "losses_last5": 0,
+  "goals_scored_last5": 14,
+  "goals_conceded_last5": 4,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 1943.7,
+  "recent_matches": [
+   {
+    "opponent": "United States",
+    "goals_for": 5,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Mexico",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Croatia",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-02"
+   },
+   {
+    "opponent": "Tunisia",
+    "goals_for": 5,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Egypt",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "1060": {
+  "name": "Bosnia-Herzegovina",
+  "wins_last5": 0,
+  "draws_last5": 5,
+  "losses_last5": 0,
+  "goals_scored_last5": 4,
+  "goals_conceded_last5": 4,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.3,
+  "elo": 1673.4,
+  "recent_matches": [
+   {
+    "opponent": "Wales",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Italy",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "North Macedonia",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-05-29"
+   },
+   {
+    "opponent": "Panama",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Canada",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-12"
+   }
+  ]
+ },
+ "764": {
+  "name": "Brazil",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 13,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 2060.7,
+  "recent_matches": [
+   {
+    "opponent": "France",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Croatia",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Panama",
+    "goals_for": 6,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Egypt",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Morocco",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "828": {
+  "name": "Canada",
+  "wins_last5": 1,
+  "draws_last5": 4,
+  "losses_last5": 0,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 4,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.5,
+  "elo": 1874.9,
+  "recent_matches": [
+   {
+    "opponent": "Iceland",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Tunisia",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Uzbekistan",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Republic of Ireland",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-06-05"
+   },
+   {
+    "opponent": "Bosnia and Herzegovina",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-06-12"
+   }
+  ]
+ },
+ "1930": {
+  "name": "Cape Verde Islands",
+  "wins_last5": 1,
+  "draws_last5": 2,
+  "losses_last5": 2,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 8,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.4,
+  "elo": 1680.6,
+  "recent_matches": [
+   {
+    "opponent": "Chile",
+    "goals_for": 2,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Finland",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-30"
+   },
+   {
+    "opponent": "Serbia",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Bermuda",
+    "goals_for": 0,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Spain",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "818": {
+  "name": "Colombia",
+  "wins_last5": 3,
+  "draws_last5": 0,
+  "losses_last5": 2,
+  "goals_scored_last5": 10,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 2062.6,
+  "recent_matches": [
+   {
+    "opponent": "Australia",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "Croatia",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "France",
+    "goals_for": 1,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-29"
+   },
+   {
+    "opponent": "Costa Rica",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Jordan",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-07"
+   }
+  ]
+ },
+ "1934": {
+  "name": "Congo DR",
+  "wins_last5": 2,
+  "draws_last5": 1,
+  "losses_last5": 2,
+  "goals_scored_last5": 4,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.8,
+  "elo": 1762.7,
+  "recent_matches": [
+   {
+    "opponent": "Algeria",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-01-06"
+   },
+   {
+    "opponent": "Bermuda",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-25"
+   },
+   {
+    "opponent": "Jamaica",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Denmark",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-03"
+   },
+   {
+    "opponent": "Chile",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-09"
+   }
+  ]
+ },
+ "799": {
+  "name": "Croatia",
+  "wins_last5": 3,
+  "draws_last5": 0,
+  "losses_last5": 2,
+  "goals_scored_last5": 8,
+  "goals_conceded_last5": 9,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 1968.3,
+  "recent_matches": [
+   {
+    "opponent": "Montenegro",
+    "goals_for": 3,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-17"
+   },
+   {
+    "opponent": "Colombia",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Brazil",
+    "goals_for": 1,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Belgium",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-06-02"
+   },
+   {
+    "opponent": "Slovenia",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-07"
+   }
+  ]
+ },
+ "9460": {
+  "name": "Curaçao",
+  "wins_last5": 1,
+  "draws_last5": 0,
+  "losses_last5": 4,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 18,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.4,
+  "elo": 1593.5,
+  "recent_matches": [
+   {
+    "opponent": "China",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Australia",
+    "goals_for": 1,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Scotland",
+    "goals_for": 1,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Aruba",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Germany",
+    "goals_for": 1,
+    "goals_against": 7,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "798": {
+  "name": "Czechia",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 12,
+  "goals_conceded_last5": 8,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.6,
+  "elo": 1777.6,
+  "recent_matches": [
+   {
+    "opponent": "Republic of Ireland",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Denmark",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Kosovo",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Guatemala",
+    "goals_for": 5,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "South Korea",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-11"
+   }
+  ]
+ },
+ "791": {
+  "name": "Ecuador",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 4,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 1980.1,
+  "recent_matches": [
+   {
+    "opponent": "Morocco",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Netherlands",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Saudi Arabia",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Guatemala",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-07"
+   },
+   {
+    "opponent": "Ivory Coast",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "825": {
+  "name": "Egypt",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.6,
+  "elo": 1821.5,
+  "recent_matches": [
+   {
+    "opponent": "Saudi Arabia",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Spain",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Russia",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-28"
+   },
+   {
+    "opponent": "Brazil",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Belgium",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "770": {
+  "name": "England",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.5,
+  "elo": 2089.5,
+  "recent_matches": [
+   {
+    "opponent": "Albania",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-16"
+   },
+   {
+    "opponent": "Uruguay",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Japan",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "New Zealand",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Costa Rica",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-10"
+   }
+  ]
+ },
+ "773": {
+  "name": "France",
+  "wins_last5": 4,
+  "draws_last5": 0,
+  "losses_last5": 1,
+  "goals_scored_last5": 12,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.5,
+  "elo": 2123.8,
+  "recent_matches": [
+   {
+    "opponent": "Azerbaijan",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-16"
+   },
+   {
+    "opponent": "Brazil",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Colombia",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-29"
+   },
+   {
+    "opponent": "Ivory Coast",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "Northern Ireland",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-08"
+   }
+  ]
+ },
+ "759": {
+  "name": "Germany",
+  "wins_last5": 5,
+  "draws_last5": 0,
+  "losses_last5": 0,
+  "goals_scored_last5": 19,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 3.0,
+  "elo": 2015.2,
+  "recent_matches": [
+   {
+    "opponent": "Switzerland",
+    "goals_for": 4,
+    "goals_against": 3,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Ghana",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-30"
+   },
+   {
+    "opponent": "Finland",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "United States",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Curaçao",
+    "goals_for": 7,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "763": {
+  "name": "Ghana",
+  "wins_last5": 0,
+  "draws_last5": 1,
+  "losses_last5": 4,
+  "goals_scored_last5": 3,
+  "goals_conceded_last5": 11,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.1,
+  "elo": 1624.6,
+  "recent_matches": [
+   {
+    "opponent": "South Korea",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "Austria",
+    "goals_for": 1,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Germany",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-30"
+   },
+   {
+    "opponent": "Mexico",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-22"
+   },
+   {
+    "opponent": "Wales",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-02"
+   }
+  ]
+ },
+ "836": {
+  "name": "Haiti",
+  "wins_last5": 1,
+  "draws_last5": 1,
+  "losses_last5": 3,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.4,
+  "elo": 1687.3,
+  "recent_matches": [
+   {
+    "opponent": "Tunisia",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Iceland",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "New Zealand",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-02"
+   },
+   {
+    "opponent": "Peru",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-05"
+   },
+   {
+    "opponent": "Scotland",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "840": {
+  "name": "Iran",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 13,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.8,
+  "elo": 1881.9,
+  "recent_matches": [
+   {
+    "opponent": "Nigeria",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Costa Rica",
+    "goals_for": 5,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Gambia",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-29"
+   },
+   {
+    "opponent": "Mali",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "New Zealand",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "8062": {
+  "name": "Iraq",
+  "wins_last5": 2,
+  "draws_last5": 1,
+  "losses_last5": 2,
+  "goals_scored_last5": 4,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 1737.2,
+  "recent_matches": [
+   {
+    "opponent": "Jordan",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2025-12-12"
+   },
+   {
+    "opponent": "Bolivia",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Andorra",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-29"
+   },
+   {
+    "opponent": "Spain",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "Venezuela",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-09"
+   }
+  ]
+ },
+ "1935": {
+  "name": "Ivory Coast",
+  "wins_last5": 4,
+  "draws_last5": 0,
+  "losses_last5": 1,
+  "goals_scored_last5": 10,
+  "goals_conceded_last5": 4,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.5,
+  "elo": 1860.2,
+  "recent_matches": [
+   {
+    "opponent": "Egypt",
+    "goals_for": 2,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-01-10"
+   },
+   {
+    "opponent": "South Korea",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Scotland",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "France",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "Ecuador",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "766": {
+  "name": "Japan",
+  "wins_last5": 4,
+  "draws_last5": 1,
+  "losses_last5": 0,
+  "goals_scored_last5": 8,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.1,
+  "elo": 1993.9,
+  "recent_matches": [
+   {
+    "opponent": "Bolivia",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "Scotland",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "England",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Iceland",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Netherlands",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "8049": {
+  "name": "Jordan",
+  "wins_last5": 0,
+  "draws_last5": 2,
+  "losses_last5": 3,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 13,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 1774.5,
+  "recent_matches": [
+   {
+    "opponent": "Morocco",
+    "goals_for": 2,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2025-12-18"
+   },
+   {
+    "opponent": "Costa Rica",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Nigeria",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Switzerland",
+    "goals_for": 1,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Colombia",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-07"
+   }
+  ]
+ },
+ "769": {
+  "name": "Mexico",
+  "wins_last5": 4,
+  "draws_last5": 1,
+  "losses_last5": 0,
+  "goals_scored_last5": 11,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.3,
+  "elo": 1986.3,
+  "recent_matches": [
+   {
+    "opponent": "Belgium",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Ghana",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-22"
+   },
+   {
+    "opponent": "Australia",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Serbia",
+    "goals_for": 5,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "South Africa",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-11"
+   }
+  ]
+ },
+ "815": {
+  "name": "Morocco",
+  "wins_last5": 3,
+  "draws_last5": 2,
+  "losses_last5": 0,
+  "goals_scored_last5": 13,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 1991.2,
+  "recent_matches": [
+   {
+    "opponent": "Paraguay",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Burundi",
+    "goals_for": 5,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-26"
+   },
+   {
+    "opponent": "Madagascar",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-02"
+   },
+   {
+    "opponent": "Norway",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-07"
+   },
+   {
+    "opponent": "Brazil",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "8601": {
+  "name": "Netherlands",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.1,
+  "elo": 2008.1,
+  "recent_matches": [
+   {
+    "opponent": "Norway",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Ecuador",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Algeria",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-06-03"
+   },
+   {
+    "opponent": "Uzbekistan",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-08"
+   },
+   {
+    "opponent": "Japan",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "783": {
+  "name": "New Zealand",
+  "wins_last5": 1,
+  "draws_last5": 1,
+  "losses_last5": 3,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 10,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 0.5,
+  "elo": 1732.8,
+  "recent_matches": [
+   {
+    "opponent": "Finland",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Chile",
+    "goals_for": 4,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-30"
+   },
+   {
+    "opponent": "Haiti",
+    "goals_for": 0,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-02"
+   },
+   {
+    "opponent": "England",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Iran",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "8872": {
+  "name": "Norway",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 9,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.1,
+  "elo": 1970.3,
+  "recent_matches": [
+   {
+    "opponent": "Italy",
+    "goals_for": 4,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-16"
+   },
+   {
+    "opponent": "Netherlands",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Switzerland",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Sweden",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Morocco",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-07"
+   }
+  ]
+ },
+ "1836": {
+  "name": "Panama",
+  "wins_last5": 2,
+  "draws_last5": 2,
+  "losses_last5": 1,
+  "goals_scored_last5": 10,
+  "goals_conceded_last5": 11,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.6,
+  "elo": 1853.3,
+  "recent_matches": [
+   {
+    "opponent": "South Africa",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "South Africa",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Brazil",
+    "goals_for": 2,
+    "goals_against": 6,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Dominican Republic",
+    "goals_for": 4,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-03"
+   },
+   {
+    "opponent": "Bosnia and Herzegovina",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-06"
+   }
+  ]
+ },
+ "761": {
+  "name": "Paraguay",
+  "wins_last5": 3,
+  "draws_last5": 0,
+  "losses_last5": 2,
+  "goals_scored_last5": 9,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.4,
+  "elo": 1866.1,
+  "recent_matches": [
+   {
+    "opponent": "Mexico",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "Greece",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Morocco",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Nicaragua",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-05"
+   },
+   {
+    "opponent": "United States",
+    "goals_for": 1,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-12"
+   }
+  ]
+ },
+ "765": {
+  "name": "Portugal",
+  "wins_last5": 4,
+  "draws_last5": 1,
+  "losses_last5": 0,
+  "goals_scored_last5": 15,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.3,
+  "elo": 2045.2,
+  "recent_matches": [
+   {
+    "opponent": "Armenia",
+    "goals_for": 9,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2025-11-16"
+   },
+   {
+    "opponent": "Mexico",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "United States",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Chile",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Nigeria",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-10"
+   }
+  ]
+ },
+ "8030": {
+  "name": "Qatar",
+  "wins_last5": 0,
+  "draws_last5": 3,
+  "losses_last5": 2,
+  "goals_scored_last5": 2,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 0.7,
+  "elo": 1589.4,
+  "recent_matches": [
+   {
+    "opponent": "Syria",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2025-12-04"
+   },
+   {
+    "opponent": "Tunisia",
+    "goals_for": 0,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": true,
+    "date": "2025-12-07"
+   },
+   {
+    "opponent": "Republic of Ireland",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-28"
+   },
+   {
+    "opponent": "El Salvador",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Switzerland",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "801": {
+  "name": "Saudi Arabia",
+  "wins_last5": 1,
+  "draws_last5": 2,
+  "losses_last5": 2,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.1,
+  "elo": 1712.2,
+  "recent_matches": [
+   {
+    "opponent": "Serbia",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Ecuador",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Puerto Rico",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-05"
+   },
+   {
+    "opponent": "Senegal",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-09"
+   },
+   {
+    "opponent": "Uruguay",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "8873": {
+  "name": "Scotland",
+  "wins_last5": 3,
+  "draws_last5": 0,
+  "losses_last5": 2,
+  "goals_scored_last5": 9,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.1,
+  "elo": 1861.9,
+  "recent_matches": [
+   {
+    "opponent": "Japan",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Ivory Coast",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Curaçao",
+    "goals_for": 4,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "Bolivia",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Haiti",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "804": {
+  "name": "Senegal",
+  "wins_last5": 2,
+  "draws_last5": 1,
+  "losses_last5": 2,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.0,
+  "elo": 1912.8,
+  "recent_matches": [
+   {
+    "opponent": "Morocco",
+    "goals_for": 0,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-01-18"
+   },
+   {
+    "opponent": "Peru",
+    "goals_for": 2,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Gambia",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "United States",
+    "goals_for": 2,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Saudi Arabia",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-09"
+   }
+  ]
+ },
+ "774": {
+  "name": "South Africa",
+  "wins_last5": 1,
+  "draws_last5": 2,
+  "losses_last5": 2,
+  "goals_scored_last5": 3,
+  "goals_conceded_last5": 5,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.4,
+  "elo": 1654.9,
+  "recent_matches": [
+   {
+    "opponent": "Panama",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Panama",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Nicaragua",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-05-29"
+   },
+   {
+    "opponent": "Jamaica",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Mexico",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-11"
+   }
+  ]
+ },
+ "772": {
+  "name": "South Korea",
+  "wins_last5": 3,
+  "draws_last5": 0,
+  "losses_last5": 2,
+  "goals_scored_last5": 8,
+  "goals_conceded_last5": 6,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.9,
+  "elo": 1903.3,
+  "recent_matches": [
+   {
+    "opponent": "Ivory Coast",
+    "goals_for": 0,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Austria",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Trinidad and Tobago",
+    "goals_for": 5,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-05-30"
+   },
+   {
+    "opponent": "El Salvador",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-03"
+   },
+   {
+    "opponent": "Czech Republic",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-11"
+   }
+  ]
+ },
+ "760": {
+  "name": "Spain",
+  "wins_last5": 2,
+  "draws_last5": 3,
+  "losses_last5": 0,
+  "goals_scored_last5": 7,
+  "goals_conceded_last5": 2,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 2190.0,
+  "recent_matches": [
+   {
+    "opponent": "Serbia",
+    "goals_for": 3,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Egypt",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Iraq",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "Peru",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-08"
+   },
+   {
+    "opponent": "Cape Verde",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "792": {
+  "name": "Sweden",
+  "wins_last5": 3,
+  "draws_last5": 1,
+  "losses_last5": 1,
+  "goals_scored_last5": 14,
+  "goals_conceded_last5": 9,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.1,
+  "elo": 1820.5,
+  "recent_matches": [
+   {
+    "opponent": "Ukraine",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Poland",
+    "goals_for": 3,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Norway",
+    "goals_for": 1,
+    "goals_against": 3,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Greece",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-06-04"
+   },
+   {
+    "opponent": "Tunisia",
+    "goals_for": 5,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "788": {
+  "name": "Switzerland",
+  "wins_last5": 1,
+  "draws_last5": 3,
+  "losses_last5": 1,
+  "goals_scored_last5": 9,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 1930.7,
+  "recent_matches": [
+   {
+    "opponent": "Germany",
+    "goals_for": 3,
+    "goals_against": 4,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Norway",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Jordan",
+    "goals_for": 4,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Australia",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Qatar",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "802": {
+  "name": "Tunisia",
+  "wins_last5": 1,
+  "draws_last5": 1,
+  "losses_last5": 3,
+  "goals_scored_last5": 2,
+  "goals_conceded_last5": 11,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.2,
+  "elo": 1686.3,
+  "recent_matches": [
+   {
+    "opponent": "Haiti",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Canada",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Austria",
+    "goals_for": 0,
+    "goals_against": 1,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Belgium",
+    "goals_for": 0,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Sweden",
+    "goals_for": 1,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-14"
+   }
+  ]
+ },
+ "803": {
+  "name": "Turkey",
+  "wins_last5": 4,
+  "draws_last5": 0,
+  "losses_last5": 1,
+  "goals_scored_last5": 8,
+  "goals_conceded_last5": 3,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 2.2,
+  "elo": 1914.5,
+  "recent_matches": [
+   {
+    "opponent": "Romania",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-26"
+   },
+   {
+    "opponent": "Kosovo",
+    "goals_for": 1,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "North Macedonia",
+    "goals_for": 4,
+    "goals_against": 0,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Venezuela",
+    "goals_for": 2,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": false,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Australia",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-13"
+   }
+  ]
+ },
+ "771": {
+  "name": "United States",
+  "wins_last5": 2,
+  "draws_last5": 0,
+  "losses_last5": 3,
+  "goals_scored_last5": 10,
+  "goals_conceded_last5": 12,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.9,
+  "elo": 1877.0,
+  "recent_matches": [
+   {
+    "opponent": "Belgium",
+    "goals_for": 2,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-28"
+   },
+   {
+    "opponent": "Portugal",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Senegal",
+    "goals_for": 3,
+    "goals_against": 2,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-05-31"
+   },
+   {
+    "opponent": "Germany",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": true,
+    "date": "2026-06-06"
+   },
+   {
+    "opponent": "Paraguay",
+    "goals_for": 4,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-06-12"
+   }
+  ]
+ },
+ "758": {
+  "name": "Uruguay",
+  "wins_last5": 0,
+  "draws_last5": 4,
+  "losses_last5": 1,
+  "goals_scored_last5": 3,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.7,
+  "elo": 1954.1,
+  "recent_matches": [
+   {
+    "opponent": "Mexico",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2025-11-15"
+   },
+   {
+    "opponent": "United States",
+    "goals_for": 1,
+    "goals_against": 5,
+    "result": "D",
+    "was_home": false,
+    "date": "2025-11-18"
+   },
+   {
+    "opponent": "England",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Algeria",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-03-31"
+   },
+   {
+    "opponent": "Saudi Arabia",
+    "goals_for": 1,
+    "goals_against": 1,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-06-15"
+   }
+  ]
+ },
+ "8070": {
+  "name": "Uzbekistan",
+  "wins_last5": 1,
+  "draws_last5": 2,
+  "losses_last5": 2,
+  "goals_scored_last5": 6,
+  "goals_conceded_last5": 7,
+  "possession_avg": 50,
+  "shots_on_target_avg": 5.0,
+  "injured_players": 0,
+  "yellow_cards_last5": 0,
+  "red_cards_last5": 0,
+  "ranking": 10,
+  "played": 5,
+  "pts_per_game": 1.5,
+  "elo": 1819.5,
+  "recent_matches": [
+   {
+    "opponent": "China",
+    "goals_for": 2,
+    "goals_against": 2,
+    "result": "E",
+    "was_home": false,
+    "date": "2026-01-26"
+   },
+   {
+    "opponent": "Gabon",
+    "goals_for": 3,
+    "goals_against": 1,
+    "result": "V",
+    "was_home": true,
+    "date": "2026-03-27"
+   },
+   {
+    "opponent": "Venezuela",
+    "goals_for": 0,
+    "goals_against": 0,
+    "result": "E",
+    "was_home": true,
+    "date": "2026-03-30"
+   },
+   {
+    "opponent": "Canada",
+    "goals_for": 0,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-01"
+   },
+   {
+    "opponent": "Netherlands",
+    "goals_for": 1,
+    "goals_against": 2,
+    "result": "D",
+    "was_home": false,
+    "date": "2026-06-08"
+   }
+  ]
+ }
+}
