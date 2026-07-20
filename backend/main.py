@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from predictor import predict
 from mock_data import LEAGUES, TEAMS
@@ -8,6 +8,10 @@ import football_api as fapi
 import api_sports as asports
 import weather_api as wapi
 import supabase_client as sbc
+import odds_api
+import nba_predictor
+import ensemble
+from ml import dixon_coles
 import result_checker
 import asyncio
 
@@ -113,6 +117,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Autenticación / autorización ──────────────────────────────────────────────
+# Emails con permisos de administrador (ven toda la información). Se configuran
+# en la variable de entorno ADMIN_EMAILS, separados por comas.
+_ADMIN_EMAILS = {
+    e.strip().lower()
+    for e in os.getenv("ADMIN_EMAILS", "").split(",")
+    if e.strip()
+}
+
+
+def _resolve_user(authorization: str | None) -> dict:
+    """Resuelve el usuario desde el header ``Authorization: Bearer <jwt>``.
+
+    Args:
+        authorization (str | None): Valor del header HTTP Authorization.
+
+    Returns:
+        dict: ``{"id", "email", "is_admin"}``. id/email son None si es anónimo
+        (sin token o token inválido).
+    """
+    user = None
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization.split(" ", 1)[1].strip()
+        user = sbc.get_user_from_token(token)
+    if not user:
+        return {"id": None, "email": None, "is_admin": False}
+    return {
+        "id":       user["id"],
+        "email":    user["email"],
+        "is_admin": user["email"].lower() in _ADMIN_EMAILS,
+    }
 
 
 @app.get("/")
@@ -224,11 +261,36 @@ def search_teams(q: str = ""):
 
 
 @app.post("/predict")
-def post_prediction(body: dict):
-    return run_full_prediction(body)
+def post_prediction(body: dict, authorization: str | None = Header(default=None)):
+    user = _resolve_user(authorization)
+    # Opción B: solo usuarios autenticados pueden predecir.
+    if not user["id"]:
+        raise HTTPException(status_code=401, detail="Inicia sesión para analizar un partido")
+    # Marcamos al usuario como activo (heartbeat implícito al predecir).
+    sbc.touch_user_activity(user["id"])
+    return run_full_prediction(body, user_id=user["id"])
 
 
-def run_full_prediction(body: dict):
+@app.post("/me/heartbeat")
+def heartbeat(authorization: str | None = Header(default=None)):
+    """Marca al usuario autenticado como activo ahora (para 'usuarios activos')."""
+    user = _resolve_user(authorization)
+    if not user["id"]:
+        raise HTTPException(status_code=401, detail="No autenticado")
+    sbc.touch_user_activity(user["id"])
+    return {"ok": True}
+
+
+@app.get("/admin/stats")
+def admin_stats(window_minutes: int = 5, authorization: str | None = Header(default=None)):
+    """Estadísticas de usuarios (solo administrador): registrados y activos."""
+    user = _resolve_user(authorization)
+    if not user["is_admin"]:
+        raise HTTPException(status_code=403, detail="Solo el administrador puede ver esto")
+    return sbc.get_user_stats(window_minutes=window_minutes)
+
+
+def run_full_prediction(body: dict, user_id: str | None = None):
     home   = body.get("home_team")
     away   = body.get("away_team")
     league = body.get("league", "")
@@ -325,8 +387,52 @@ def run_full_prediction(body: dict):
     neutral_venue = league == "Mundial FIFA"
     result["poisson"] = predict_poisson(poisson_home, poisson_away, neutral=neutral_venue)
 
+    # ── Ensamble XGBoost + Poisson + calibración ─────────────────────────────
+    # Mejora medida en backtest temporal (ml/tune_ensemble.py): baja el RPS y el
+    # log-loss frente al XGBoost solo. Reemplaza las probabilidades 1X2 finales.
+    try:
+        poi_1x2 = (result.get("poisson") or {}).get("result_1x2")
+        if poi_1x2 and result.get("probabilities"):
+            result["probabilities"] = ensemble.blend_and_calibrate(
+                result["probabilities"], poi_1x2
+            )
+            result["ensemble"] = True
+    except Exception as e:
+        print(f"[Ensemble] No se pudo ensamblar: {e}")
+
+    # ── Dixon-Coles (modelo primario donde hay cobertura) ────────────────────
+    # Midió mejor que el ensamble en backtest temporal (RPS ~0.195 vs ~0.212).
+    # Se mezcla como señal dominante; si la liga/equipos no están cubiertos,
+    # se mantiene el ensamble anterior.
+    try:
+        # Clubes (5 ligas) o, si no aplica, selecciones (modelo nacional).
+        dc = dixon_coles.predict_runtime(league, home, away) or \
+             dixon_coles.predict_national(home, away)
+        if dc and result.get("probabilities"):
+            result["probabilities"] = ensemble.weighted_blend(
+                dc, result["probabilities"], w_primary=0.7
+            )
+            result["dixon_coles"] = True
+            result["model"] = (result.get("model", "") + " + Dixon-Coles").strip(" +")
+    except Exception as e:
+        print(f"[DixonColes] No se pudo aplicar: {e}")
+
     # ── Córners y tarjetas (StatsBomb) ───────────────────────────────────────
     result["corners_cards"] = predict_corners_cards(home, away)
+
+    # ── Cuotas reales + EV automático (The Odds API) ─────────────────────────
+    # Best-effort: si no hay ODDS_API_KEY o la liga no está mapeada, se omite
+    # sin afectar el resto de la predicción (el usuario puede seguir usando el
+    # panel de valor con cuotas estimadas).
+    try:
+        raw_odds = odds_api.get_match_odds(home, away, league, match_date)
+        annotated = odds_api.annotate_markets(
+            raw_odds, result.get("probabilities", {}), result.get("poisson")
+        )
+        if annotated:
+            result["odds"] = annotated
+    except Exception as e:
+        print(f"[OddsAPI] No se pudieron obtener cuotas: {e}")
 
     result["injuries"] = {
         "home": {"team": home, "players": home_injuries},
@@ -436,6 +542,8 @@ def run_full_prediction(body: dict):
             "model_version":  result.get("model", "rule-based"),
             # Mercados predichos (para medir acierto por tipo de mercado)
             "markets_json":   markets_snapshot,
+            # Dueño de la predicción (null = anónimo)
+            "user_id":        user_id,
         }
         saved = sbc.save_prediction(pred_record)
         if saved:
@@ -446,69 +554,44 @@ def run_full_prediction(body: dict):
     return result
 
 
-@app.post("/analyze-bet-slip")
-def analyze_bet_slip(body: dict):
+@app.get("/predictions/recent")
+def recent_public(limit: int = 10):
+    """Feed público: últimos partidos distintos predichos (sin datos de usuario).
+
+    Visible para todo el mundo. Si varias personas predijeron el mismo partido,
+    aparece una sola vez.
     """
-    Recibe la imagen de un cupón (base64) y la evalúa contra el modelo.
-    Body: { "image": "<base64>", "media_type": "image/png" }
+    rows = sbc.get_recent_public(limit=limit)
+    return {"predictions": rows, "count": len(rows)}
+
+
+@app.get("/predictions/mine")
+def my_predictions(limit: int = 100, offset: int = 0,
+                   authorization: str | None = Header(default=None)):
+    """Historial del usuario autenticado.
+
+    - Usuario normal: solo sus propias predicciones.
+    - Administrador: todas las predicciones (``is_admin: true``).
+    Requiere ``Authorization: Bearer <jwt>``.
     """
-    import bet_slip_analyzer as bsa
-    import football_api as fapi
-
-    image = body.get("image")
-    media_type = body.get("media_type", "image/png")
-    if not image:
-        raise HTTPException(status_code=400, detail="Se requiere 'image' (base64)")
-
-    try:
-        extracted = bsa.extract_legs(image, media_type)
-    except RuntimeError as e:
-        # Falta la API key de Anthropic
-        raise HTTPException(status_code=503, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"No se pudo leer la imagen: {e}")
-
-    legs = extracted.get("legs", []) or []
-    if not legs:
-        raise HTTPException(status_code=422, detail="No se detectaron selecciones en la imagen")
-
-    # Correr la predicción de cada partido único
-    predictions: dict = {}
-    for leg in legs:
-        h, a = leg.get("home"), leg.get("away")
-        if not h or not a or h == a:
-            continue
-        key = f"{h} vs {a}"
-        if key in predictions:
-            continue
-        pred_body = {
-            "home_team": h, "away_team": a,
-            "league": leg.get("league") or "Mundial FIFA",
-            "home_id": fapi.resolve_fd_id(h),
-            "away_id": fapi.resolve_fd_id(a),
-        }
-        try:
-            predictions[key] = run_full_prediction(pred_body)
-        except Exception as e:
-            print(f"[BetSlip] No se pudo predecir {key}: {e}")
-
-    if not predictions:
-        raise HTTPException(status_code=422, detail="No se pudieron predecir los partidos del cupón")
-
-    try:
-        analysis = bsa.map_and_analyze(
-            legs, predictions,
-            extracted.get("total_odds"), extracted.get("stake"),
-        )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"No se pudo analizar el cupón: {e}")
-
-    return analysis
+    user = _resolve_user(authorization)
+    if not user["id"]:
+        raise HTTPException(status_code=401, detail="Inicia sesión para ver tu historial")
+    # El admin ve todo (user_id=None → sin filtro); el usuario normal solo lo suyo.
+    rows = sbc.get_predictions(
+        limit=limit, offset=offset,
+        user_id=None if user["is_admin"] else user["id"],
+    )
+    return {"predictions": rows, "count": len(rows), "is_admin": user["is_admin"]}
 
 
 @app.get("/predictions")
-def list_predictions(limit: int = 50, offset: int = 0):
-    """Historial de todas las predicciones guardadas en Supabase."""
+def list_predictions(limit: int = 50, offset: int = 0,
+                     authorization: str | None = Header(default=None)):
+    """Historial completo de todas las predicciones (solo administrador)."""
+    user = _resolve_user(authorization)
+    if not user["is_admin"]:
+        raise HTTPException(status_code=403, detail="Solo el administrador puede ver todo el historial")
     rows = sbc.get_predictions(limit=limit, offset=offset)
     return {"predictions": rows, "count": len(rows)}
 
@@ -593,6 +676,80 @@ def update_prediction_result(prediction_id: int, body: dict):
     result = sbc.update_result(prediction_id, int(home_goals), int(away_goals))
     if not result:
         raise HTTPException(status_code=404, detail=f"Prediccion {prediction_id} no encontrada o error al actualizar")
+    return result
+
+
+# ── NBA ───────────────────────────────────────────────────────────────────────
+@app.get("/nba/teams")
+def nba_teams():
+    """Lista de equipos NBA disponibles (para autocompletado)."""
+    return {"teams": nba_predictor.list_teams(), "ready": nba_predictor.is_ready()}
+
+
+@app.get("/nba/upcoming")
+def nba_upcoming():
+    """Próximos partidos NBA con cuotas (vía The Odds API; vacío fuera de temporada)."""
+    return {"matches": odds_api.list_nba_events()}
+
+
+@app.post("/nba/predict")
+def nba_predict(body: dict, authorization: str | None = Header(default=None)):
+    """Predicción NBA (Elo + totales + hándicap) con cuotas/EV si hay key.
+
+    Requiere sesión (igual que el fútbol). Body: ``{home_team, away_team}``.
+    """
+    user = _resolve_user(authorization)
+    if not user["id"]:
+        raise HTTPException(status_code=401, detail="Inicia sesión para analizar un partido")
+    sbc.touch_user_activity(user["id"])
+
+    home = (body.get("home_team") or "").strip()
+    away = (body.get("away_team") or "").strip()
+    if not home or not away:
+        raise HTTPException(status_code=400, detail="Se requieren 'home_team' y 'away_team'")
+    if home == away:
+        raise HTTPException(status_code=400, detail="Los equipos deben ser diferentes")
+    if not nba_predictor.is_ready():
+        raise HTTPException(status_code=503, detail="El modelo NBA no está construido (corre ml.build_nba_elo)")
+
+    result = nba_predictor.predict(home, away)
+
+    # Cuotas reales + EV (best-effort)
+    try:
+        raw = odds_api.get_nba_odds(home, away)
+        annotated = nba_predictor.annotate_odds(result, raw)
+        if annotated:
+            result["odds"] = annotated
+    except Exception as e:
+        print(f"[NBA] No se pudieron obtener cuotas: {e}")
+
+    # Guardar en Supabase (sport='nba'; puntos esperados en xg_*)
+    try:
+        probs = result["probabilities"]
+        ph, pa = probs["home_win"], probs["away_win"]
+        pred_winner = "Local" if ph >= pa else "Visitante"
+        ep = result["expected_points"]
+        saved = sbc.save_prediction({
+            "sport":         "nba",
+            "league":        "NBA",
+            "home_team":     home,
+            "away_team":     away,
+            "prob_home_win": ph,
+            "prob_draw":     0,
+            "prob_away_win": pa,
+            "pred_winner":   pred_winner,
+            "confidence":    max(ph, pa),
+            "model_used":    result.get("model", "NBA Elo v1"),
+            "model_version": result.get("model", "NBA Elo v1"),
+            "xg_home":       ep["home"],
+            "xg_away":       ep["away"],
+            "user_id":       user["id"],
+        })
+        if saved:
+            result["prediction_id"] = saved["id"]
+    except Exception as e:
+        print(f"[NBA] No se pudo guardar prediccion: {e}")
+
     return result
 
 

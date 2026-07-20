@@ -12,6 +12,9 @@ export interface MarketRow {
   market: string;
   category: MarketCategory;
   prob: number; // 0-100
+  // Clave para cruzar con las cuotas reales del backend (odds.markets[oddsKey]).
+  // Solo la tienen los mercados con cuota real disponible (1X2, over/under goles).
+  oddsKey?: string;
 }
 
 export const CATEGORY_COLORS: Record<MarketCategory, string> = {
@@ -72,9 +75,9 @@ export function buildMarketRows(
 
   // ── Resultado (XGBoost) + dobles oportunidades ─────────────────────────
   rows.push(
-    { market: `Gana ${homeTeam} (1)`,           category: "Resultado", prob: home_win },
-    { market: "Empate (X)",                      category: "Resultado", prob: draw },
-    { market: `Gana ${awayTeam} (2)`,            category: "Resultado", prob: away_win },
+    { market: `Gana ${homeTeam} (1)`,           category: "Resultado", prob: home_win, oddsKey: "1" },
+    { market: "Empate (X)",                      category: "Resultado", prob: draw, oddsKey: "X" },
+    { market: `Gana ${awayTeam} (2)`,            category: "Resultado", prob: away_win, oddsKey: "2" },
     { market: `${homeTeam} o empate (1X)`,       category: "Resultado", prob: home_win + draw },
     { market: `${awayTeam} o empate (X2)`,       category: "Resultado", prob: draw + away_win },
     { market: `${homeTeam} o ${awayTeam} (12)`,  category: "Resultado", prob: home_win + away_win },
@@ -86,8 +89,8 @@ export function buildMarketRows(
     for (const line of ["0.5", "1.5", "2.5", "3.5", "4.5"]) {
       const over  = ou[`over_${line}`];
       const under = ou[`under_${line}`];
-      if (over  != null) rows.push({ market: `Más de ${line} goles`,   category: "Goles", prob: over });
-      if (under != null) rows.push({ market: `Menos de ${line} goles`, category: "Goles", prob: under });
+      if (over  != null) rows.push({ market: `Más de ${line} goles`,   category: "Goles", prob: over,  oddsKey: `over_${line}` });
+      if (under != null) rows.push({ market: `Menos de ${line} goles`, category: "Goles", prob: under, oddsKey: `under_${line}` });
     }
     rows.push(
       { market: "Ambos equipos marcan: Sí", category: "Goles", prob: poisson.btts.yes },

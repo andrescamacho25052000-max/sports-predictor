@@ -14,8 +14,16 @@ import {
   RefreshCw,
   Edit3,
   Brain,
+  BarChart3,
+  Lock,
+  ShieldCheck,
+  Users,
+  Radio,
 } from "lucide-react";
-import { supabase, type Prediction } from "@/lib/supabase";
+import { PredictionRecord as Prediction, fetchMyPredictions, fetchAdminStats, AdminUserStats } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import AuthMenu from "@/components/AuthMenu";
+import SportSwitcher from "@/components/SportSwitcher";
 import Link from "next/link";
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
@@ -450,15 +458,21 @@ function ModelEvolution({ evolution }: { evolution: any }) {
   );
 }
 
+/* ── Resumen calculado a partir de las predicciones del usuario ──────────── */
+function summarize(preds: Prediction[]) {
+  const total = preds.length;
+  const evaluated = preds.filter((p) => p.result_actual != null).length;
+  const correct = preds.filter((p) => p.was_correct === true).length;
+  const accuracy = evaluated > 0 ? Math.round((correct / evaluated) * 1000) / 10 : null;
+  return { total, evaluated, correct, accuracy };
+}
+
 /* ── Page ────────────────────────────────────────────────────────────────── */
 export default function HistoryPage() {
+  const { session, loading: authLoading } = useAuth();
   const [predictions, setPredictions] = useState<Prediction[]>([]);
-  const [stats, setStats] = useState<{
-    total_predictions: number;
-    evaluated: number;
-    correct: number;
-    accuracy: number | null;
-  } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userStats, setUserStats] = useState<AdminUserStats | null>(null);
   const [evolution, setEvolution] = useState<any>(null);
   const [marketStats, setMarketStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -486,22 +500,24 @@ export default function HistoryPage() {
   }
 
   async function load() {
+    const token = session?.access_token;
+    if (!token) { setLoading(false); return; }
     setLoading(true);
     try {
-      const [predRes, statsRes, evoRes, mktRes] = await Promise.all([
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions?limit=100`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/stats`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/model-evolution`),
-        fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/market-stats`),
-      ]);
-      const predData  = await predRes.json();
-      const statsData = await statsRes.json();
-      const evoData   = await evoRes.json();
-      const mktData   = await mktRes.json();
-      setPredictions(predData.predictions || []);
-      setStats(statsData);
-      setEvolution(evoData);
-      setMarketStats(mktData);
+      const { predictions: preds, is_admin } = await fetchMyPredictions(token);
+      setPredictions(preds);
+      setIsAdmin(is_admin);
+
+      // Paneles globales del modelo + stats de usuarios: solo administrador.
+      if (is_admin) {
+        const [evoRes, mktRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/model-evolution`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/market-stats`),
+        ]);
+        setEvolution(await evoRes.json());
+        setMarketStats(await mktRes.json());
+        try { setUserStats(await fetchAdminStats(token)); } catch { /* noop */ }
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -510,8 +526,10 @@ export default function HistoryPage() {
   }
 
   useEffect(() => {
+    if (authLoading) return;
     load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, session?.access_token]);
 
   const filtered = predictions.filter((p) => {
     if (filter === "pending") return p.result_actual === null;
@@ -519,6 +537,36 @@ export default function HistoryPage() {
     if (filter === "wrong") return p.was_correct === false;
     return true;
   });
+
+  const summary = summarize(predictions);
+
+  // ── Estados de sesión: cargando / sin sesión ─────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <RefreshCw size={24} className="animate-spin text-emerald-400" />
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center px-4 text-center gap-4">
+        <Lock size={36} className="text-white/30" />
+        <div>
+          <h1 className="text-xl font-bold">Tu historial es privado</h1>
+          <p className="text-sm text-white/40 mt-1 max-w-xs">
+            Inicia sesión para ver las predicciones que has hecho.
+          </p>
+        </div>
+        <AuthMenu />
+        <Link href="/" className="text-emerald-400 text-sm hover:underline mt-2">← Volver al inicio</Link>
+        <Link href="/track-record" className="text-white/40 text-sm hover:underline">
+          Ver el track record público →
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-950 text-white pb-24 sm:pb-8">
@@ -533,13 +581,20 @@ export default function HistoryPage() {
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-bold flex items-center gap-1.5">
                 <History size={18} className="text-emerald-400 flex-shrink-0" />
-                <span className="truncate">Historial</span>
+                <span className="truncate">{isAdmin ? "Todas las predicciones" : "Mis predicciones"}</span>
+                {isAdmin && (
+                  <span className="flex items-center gap-1 text-[10px] font-bold bg-amber-500/15 text-amber-400 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    <ShieldCheck size={11} /> Admin
+                  </span>
+                )}
               </h1>
-              <p className="text-xs text-white/40 hidden sm:block">Registro completo · Supabase</p>
+              <p className="text-xs text-white/40 hidden sm:block">
+                {isAdmin ? "Vista administrativa · todos los usuarios" : `Sesión: ${session.user.email}`}
+              </p>
             </div>
           </div>
 
-          {/* Acciones — en mobile se colapsan a iconos */}
+          {/* Acciones */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {checkMsg && (
               <motion.span
@@ -550,38 +605,48 @@ export default function HistoryPage() {
                 {checkMsg}
               </motion.span>
             )}
-            <button
-              onClick={async () => {
-                setRetraining(true);
-                try {
-                  const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/retrain`, { method: "POST", headers: {"Content-Type":"application/json"}, body: '{}' });
-                  const d = await r.json();
-                  setCheckMsg(d.status === "trained" ? `Modelo v${d.new_version} — ${d.accuracy_after}%` : d.message || d.status);
-                  if (d.status === "trained") await load();
-                } catch { setCheckMsg("Error al reentrenar"); }
-                setRetraining(false);
-                setTimeout(() => setCheckMsg(""), 6000);
-              }}
-              disabled={retraining}
-              title="Reentrenar modelo"
-              className="flex items-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 text-indigo-400 text-xs transition-colors disabled:opacity-50"
-            >
-              <Brain size={13} className={retraining ? "animate-pulse" : ""} />
-              <span className="hidden sm:inline">{retraining ? "Entrenando..." : "Reentrenar"}</span>
-            </button>
-            <button
-              onClick={checkResults}
-              disabled={checking}
-              title="Buscar resultados"
-              className="flex items-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/20 text-emerald-400 text-xs transition-colors disabled:opacity-50"
-            >
-              <RefreshCw size={13} className={checking ? "animate-spin" : ""} />
-              <span className="hidden sm:inline">{checking ? "Buscando..." : "Buscar resultados"}</span>
-            </button>
+            {/* Acciones del modelo: solo administrador */}
+            {isAdmin && (
+              <>
+                <button
+                  onClick={async () => {
+                    setRetraining(true);
+                    try {
+                      const r = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/predictions/retrain`, { method: "POST", headers: {"Content-Type":"application/json"}, body: '{}' });
+                      const d = await r.json();
+                      setCheckMsg(d.status === "trained" ? `Modelo v${d.new_version} — ${d.accuracy_after}%` : d.message || d.status);
+                      if (d.status === "trained") await load();
+                    } catch { setCheckMsg("Error al reentrenar"); }
+                    setRetraining(false);
+                    setTimeout(() => setCheckMsg(""), 6000);
+                  }}
+                  disabled={retraining}
+                  title="Reentrenar modelo"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/20 text-indigo-400 text-xs transition-colors disabled:opacity-50"
+                >
+                  <Brain size={13} className={retraining ? "animate-pulse" : ""} />
+                  <span className="hidden sm:inline">{retraining ? "Entrenando..." : "Reentrenar"}</span>
+                </button>
+                <button
+                  onClick={checkResults}
+                  disabled={checking}
+                  title="Buscar resultados"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/20 text-emerald-400 text-xs transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw size={13} className={checking ? "animate-spin" : ""} />
+                  <span className="hidden sm:inline">{checking ? "Buscando..." : "Buscar resultados"}</span>
+                </button>
+              </>
+            )}
             <button onClick={load} disabled={loading} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors disabled:opacity-50">
               <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
             </button>
           </div>
+        </div>
+
+        {/* Selector de deporte */}
+        <div className="mb-5">
+          <SportSwitcher />
         </div>
 
         {/* Mensaje de acción en mobile */}
@@ -591,21 +656,44 @@ export default function HistoryPage() {
           </motion.p>
         )}
 
-        {/* Stats */}
-        {stats && (
-          <StatsBar
-            total={stats.total_predictions}
-            evaluated={stats.evaluated}
-            correct={stats.correct}
-            accuracy={stats.accuracy}
-          />
+        {/* Usuarios (solo admin): registrados y activos ahora */}
+        {isAdmin && userStats && (
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-sky-500/15">
+                <Users size={20} className="text-sky-400" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">{userStats.registered}</div>
+                <div className="text-xs text-white/40">Usuarios registrados</div>
+              </div>
+            </div>
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-emerald-500/15 relative">
+                <Radio size={20} className="text-emerald-400" />
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-emerald-400">{userStats.active}</div>
+                <div className="text-xs text-white/40">
+                  Activos ahora <span className="text-white/25">({userStats.window_minutes} min)</span>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
-        {/* Precisión por mercado */}
-        <MarketAccuracy market={marketStats} />
+        {/* Resumen (calculado de las predicciones mostradas) */}
+        <StatsBar
+          total={summary.total}
+          evaluated={summary.evaluated}
+          correct={summary.correct}
+          accuracy={summary.accuracy}
+        />
 
-        {/* Evolución del modelo */}
-        <ModelEvolution evolution={evolution} />
+        {/* Paneles globales del modelo: solo administrador */}
+        {isAdmin && <MarketAccuracy market={marketStats} />}
+        {isAdmin && <ModelEvolution evolution={evolution} />}
 
         {/* Filters */}
         <div className="flex gap-2 mb-4 flex-wrap">
@@ -675,6 +763,10 @@ export default function HistoryPage() {
         <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
           <TrendingUp size={20} />
           <span className="text-xs">Predecir</span>
+        </Link>
+        <Link href="/track-record" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
+          <BarChart3 size={20} />
+          <span className="text-xs">Récord</span>
         </Link>
         <Link href="/history" className="flex-1 flex flex-col items-center gap-1 py-3 text-emerald-400">
           <History size={20} />

@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { fetchPrediction, Prediction, Match } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import ValuePanel      from "@/components/ValuePanel";
 import ParlaySuggestions from "@/components/ParlaySuggestions";
-import { TrendingUp, History } from "lucide-react";
+import { TrendingUp, History, BarChart3, Lock } from "lucide-react";
 import Link from "next/link";
+import AuthMenu from "@/components/AuthMenu";
 
 function formatDate(d: string) {
   if (!d) return "";
@@ -22,6 +24,7 @@ function formatDate(d: string) {
 function MatchContent() {
   const router = useRouter();
   const sp     = useSearchParams();
+  const { session, loading: authLoading } = useAuth();
 
   const home   = sp.get("home")   ?? "";
   const away   = sp.get("away")   ?? "";
@@ -35,15 +38,21 @@ function MatchContent() {
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState("");
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    // Esperamos a que la sesión resuelva para atribuir la predicción al usuario.
+    if (authLoading || startedRef.current) return;
     if (!home || !away) { router.replace("/"); return; }
+    // Opción B: sin sesión no se predice; se muestra la pantalla de login.
+    if (!session) { setLoading(false); return; }
+    startedRef.current = true;
     const match: Match = { home, away, home_id: homeId, away_id: awayId, date };
-    fetchPrediction(match, league)
+    fetchPrediction(match, league, session.access_token)
       .then(setPrediction)
       .catch(() => setError("No se pudo obtener la predicción. ¿El backend está corriendo?"))
       .finally(() => setLoading(false));
-  }, []);
+  }, [authLoading, session?.access_token]);
 
   if (!home || !away) return null;
 
@@ -139,8 +148,20 @@ function MatchContent() {
           )}
         </motion.div>
 
+        {/* ── Gate: sin sesión ── */}
+        {!authLoading && !session && (
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-10 sm:p-14 flex flex-col items-center gap-4 text-center">
+            <Lock size={32} className="text-white/30" />
+            <div>
+              <p className="text-white font-semibold">Inicia sesión para ver esta predicción</p>
+              <p className="text-gray-500 text-sm mt-1">El análisis y tu historial requieren una cuenta.</p>
+            </div>
+            <AuthMenu />
+          </div>
+        )}
+
         {/* ── Loading ── */}
-        {loading && (
+        {loading && session && (
           <div className="bg-white/5 border border-white/10 rounded-3xl p-10 sm:p-14 flex flex-col items-center gap-5">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping" />
@@ -198,6 +219,7 @@ function MatchContent() {
                   probabilities={prediction.probabilities}
                   poisson={prediction.poisson}
                   cornersCards={prediction.corners_cards}
+                  odds={prediction.odds}
                   homeTeam={prediction.home_team}
                   awayTeam={prediction.away_team}
                 />
@@ -237,6 +259,10 @@ function MatchContent() {
         <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
           <TrendingUp size={20} />
           <span className="text-xs">Predecir</span>
+        </Link>
+        <Link href="/track-record" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
+          <BarChart3 size={20} />
+          <span className="text-xs">Récord</span>
         </Link>
         <Link href="/history" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
           <History size={20} />

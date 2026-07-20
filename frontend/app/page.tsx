@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { TrendingUp, Search, Sliders, History, ScanLine } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, Search, Sliders, History, BarChart3 } from "lucide-react";
 import Link from "next/link";
 import TeamSearch      from "@/components/TeamSearch";
 import UpcomingMatches from "@/components/UpcomingMatches";
 import CustomMatchForm from "@/components/CustomMatchForm";
-import BetSlipAnalyzer from "@/components/BetSlipAnalyzer";
+import AuthMenu        from "@/components/AuthMenu";
+import AuthModal       from "@/components/AuthModal";
+import GeneralHistory  from "@/components/GeneralHistory";
+import SportSwitcher   from "@/components/SportSwitcher";
+import { useAuth }     from "@/lib/auth";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UpcomingMatch } from "@/lib/api";
 
@@ -20,9 +24,16 @@ interface NavPayload {
 
 export default function Home() {
   const router = useRouter();
+  const { session } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showAuth, setShowAuth] = useState(false);
 
   function goToMatch(p: NavPayload) {
+    // Opción B: hay que iniciar sesión para analizar un partido.
+    if (!session) {
+      setShowAuth(true);
+      return;
+    }
     const params = new URLSearchParams({
       home: p.home, away: p.away,
       league: p.league ?? "", date: p.date ?? "",
@@ -37,6 +48,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-emerald-950 px-4 py-6 sm:py-12 pb-24 sm:pb-12">
       <div className="w-full max-w-5xl mx-auto space-y-5 sm:space-y-8">
+
+        {/* ── Barra superior: track record + sesión ── */}
+        <div className="flex items-center justify-end gap-2">
+          <Link
+            href="/track-record"
+            className="flex items-center gap-1.5 text-xs font-medium text-white/60 hover:text-emerald-400 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 transition-colors"
+          >
+            <BarChart3 size={14} />
+            <span className="hidden xs:inline">Track record</span>
+          </Link>
+          <AuthMenu />
+        </div>
+
+        {/* ── Selector de deporte ── */}
+        <SportSwitcher />
 
         {/* ── Header ── */}
         <motion.div
@@ -87,6 +113,15 @@ export default function Home() {
           transition={{ duration: 0.5, delay: 0.15 }}
           className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-4 sm:p-6 shadow-2xl"
         >
+          {!session && (
+            <button
+              onClick={() => setShowAuth(true)}
+              className="w-full mb-4 text-left bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-4 py-2.5 text-sm text-emerald-300 hover:bg-emerald-500/15 transition-colors"
+            >
+              🔒 Inicia sesión para analizar partidos y guardar tu historial.
+            </button>
+          )}
+
           <Tabs defaultValue="search">
             <TabsList className="w-full mb-4 sm:mb-5">
               <TabsTrigger value="search">
@@ -96,10 +131,6 @@ export default function Home() {
               <TabsTrigger value="custom">
                 <Sliders className="w-4 h-4" />
                 <span className="hidden xs:inline">Partido </span>personalizado
-              </TabsTrigger>
-              <TabsTrigger value="slip">
-                <ScanLine className="w-4 h-4" />
-                <span className="hidden xs:inline">Analizar </span>cupón
               </TabsTrigger>
             </TabsList>
 
@@ -114,9 +145,6 @@ export default function Home() {
               <CustomMatchForm onAnalyze={goToMatch} />
             </TabsContent>
 
-            <TabsContent value="slip">
-              <BetSlipAnalyzer />
-            </TabsContent>
           </Tabs>
         </motion.div>
 
@@ -132,16 +160,36 @@ export default function Home() {
           </motion.div>
         )}
 
+        {/* ── Historial general (público) ── */}
+        {searchQuery.trim().length < 2 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-4 sm:p-6 shadow-xl"
+          >
+            <GeneralHistory />
+          </motion.div>
+        )}
+
         <p className="text-center text-gray-700 text-xs pb-2">
           Los mejores modelos del mundo rara vez superan el 65% en fútbol.
         </p>
       </div>
+
+      <AnimatePresence>
+        {showAuth && <AuthModal onClose={() => setShowAuth(false)} />}
+      </AnimatePresence>
 
       {/* ── Bottom nav (solo mobile) ── */}
       <nav className="fixed bottom-0 left-0 right-0 sm:hidden bg-gray-950/95 backdrop-blur border-t border-white/10 flex z-50">
         <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-emerald-400">
           <TrendingUp size={20} />
           <span className="text-xs font-medium">Predecir</span>
+        </Link>
+        <Link href="/track-record" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
+          <BarChart3 size={20} />
+          <span className="text-xs">Récord</span>
         </Link>
         <Link href="/history" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
           <History size={20} />

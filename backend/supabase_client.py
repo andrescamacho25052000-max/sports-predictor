@@ -87,21 +87,159 @@ def update_result(prediction_id: int, home_goals: int, away_goals: int,
     return None
 
 
-def get_predictions(limit: int = 50, offset: int = 0) -> list[dict]:
-    """Retorna las predicciones más recientes."""
+def get_user_from_token(token: str) -> dict | None:
+    """Verifica un JWT de Supabase Auth y devuelve el usuario.
+
+    Args:
+        token (str): Access token (JWT) emitido por Supabase Auth.
+
+    Returns:
+        dict | None: ``{"id": str, "email": str}`` si el token es válido, o
+        None si es inválido/expiró o no hay cliente.
+    """
+    sb = get_client()
+    if not sb or not token:
+        return None
+    try:
+        res = sb.auth.get_user(token)
+        user = getattr(res, "user", None)
+        if user and getattr(user, "id", None):
+            return {"id": user.id, "email": getattr(user, "email", "") or ""}
+    except Exception as e:
+        print(f"[Supabase] Token inválido: {e}")
+    return None
+
+
+def get_predictions(limit: int = 50, offset: int = 0,
+                    user_id: str | None = None) -> list[dict]:
+    """Retorna las predicciones más recientes.
+
+    Args:
+        limit (int): Máximo de filas a devolver.
+        offset (int): Desplazamiento para paginación.
+        user_id (str | None): Si se indica, filtra solo las predicciones de ese
+            usuario. Si es None, devuelve todas (uso administrativo).
+
+    Returns:
+        list[dict]: Predicciones ordenadas por fecha de creación descendente.
+    """
     sb = get_client()
     if not sb:
         return []
     try:
-        result = (sb.table("predictions")
-                    .select("*")
-                    .order("created_at", desc=True)
-                    .limit(limit)
-                    .offset(offset)
-                    .execute())
+        query = sb.table("predictions").select("*").order("created_at", desc=True)
+        if user_id is not None:
+            query = query.eq("user_id", user_id)
+        result = query.limit(limit).offset(offset).execute()
         return result.data or []
     except Exception as e:
         print(f"[Supabase] Error leyendo predicciones: {e}")
+        return []
+
+
+def _dedupe_matches(rows: list[dict], limit: int) -> list[dict]:
+    """Deja una sola predicción por partido (la más reciente).
+
+    Dos predicciones se consideran del mismo partido si coinciden en equipo
+    local, visitante y fecha. Las filas deben venir ordenadas de más reciente
+    a más antigua para conservar la última.
+
+    Args:
+        rows (list[dict]): Predicciones ya ordenadas (recientes primero).
+        limit (int): Máximo de partidos distintos a devolver.
+
+    Returns:
+        list[dict]: Hasta ``limit`` predicciones de partidos distintos.
+    """
+    seen: set = set()
+    out: list[dict] = []
+    for r in rows:
+        key = (
+            (r.get("home_team") or "").strip().lower(),
+            (r.get("away_team") or "").strip().lower(),
+            str(r.get("match_date") or ""),
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(r)
+        if len(out) >= limit:
+            break
+    return out
+
+
+# Campos seguros para el feed público (no exponen user_id ni datos internos)
+_PUBLIC_FIELDS = (
+    "id, home_team, away_team, league, match_date, home_crest, away_crest, "
+    "pred_winner, confidence, result_home_goals, result_away_goals, "
+    "result_actual, was_correct, created_at"
+)
+
+
+def touch_user_activity(user_id: str) -> None:
+    """Registra que un usuario está activo ahora (upsert de last_seen).
+
+    Args:
+        user_id (str): ID del usuario autenticado.
+    """
+    sb = get_client()
+    if not sb or not user_id:
+        return
+    try:
+        from datetime import datetime, timezone
+        sb.table("user_activity").upsert({
+            "user_id":   user_id,
+            "last_seen": datetime.now(timezone.utc).isoformat(),
+        }).execute()
+    except Exception as e:
+        print(f"[Supabase] Error registrando actividad: {e}")
+
+
+def get_user_stats(window_minutes: int = 5) -> dict:
+    """Estadísticas de usuarios para el administrador.
+
+    Args:
+        window_minutes (int): Ventana para considerar a un usuario "activo".
+
+    Returns:
+        dict: ``{"registered", "active", "window_minutes"}`` (ceros si falla).
+    """
+    sb = get_client()
+    if not sb:
+        return {"registered": 0, "active": 0, "window_minutes": window_minutes}
+    try:
+        res = sb.rpc("admin_user_stats", {"active_window_minutes": window_minutes}).execute()
+        return res.data or {"registered": 0, "active": 0, "window_minutes": window_minutes}
+    except Exception as e:
+        print(f"[Supabase] Error en stats de usuarios: {e}")
+        return {"registered": 0, "active": 0, "window_minutes": window_minutes}
+
+
+def get_recent_public(limit: int = 10) -> list[dict]:
+    """Feed público: últimos partidos distintos predichos (sin datos de usuario).
+
+    Si varias personas predijeron el mismo partido, aparece una sola vez.
+
+    Args:
+        limit (int): Cantidad de partidos distintos a devolver.
+
+    Returns:
+        list[dict]: Predicciones deduplicadas por partido, recientes primero.
+    """
+    sb = get_client()
+    if not sb:
+        return []
+    try:
+        # Traemos un margen mayor para deduplicar y aún así llenar el límite.
+        result = (sb.table("predictions")
+                    .select(_PUBLIC_FIELDS)
+                    .eq("sport", "soccer")
+                    .order("created_at", desc=True)
+                    .limit(max(limit * 5, 50))
+                    .execute())
+        return _dedupe_matches(result.data or [], limit)
+    except Exception as e:
+        print(f"[Supabase] Error en feed público: {e}")
         return []
 
 
@@ -111,13 +249,15 @@ def get_stats() -> dict:
     if not sb:
         return {}
     try:
-        # Total predicciones
-        total_res = sb.table("predictions").select("id", count="exact").execute()
+        # Total predicciones (solo fútbol; la NBA tiene su propio modelo)
+        total_res = (sb.table("predictions").select("id", count="exact")
+                       .eq("sport", "soccer").execute())
         total = total_res.count or 0
 
         # Con resultado real
         evaluated_res = (sb.table("predictions")
                            .select("id", count="exact")
+                           .eq("sport", "soccer")
                            .not_.is_("result_actual", "null")
                            .execute())
         evaluated = evaluated_res.count or 0
@@ -125,6 +265,7 @@ def get_stats() -> dict:
         # Correctas
         correct_res = (sb.table("predictions")
                          .select("id", count="exact")
+                         .eq("sport", "soccer")
                          .eq("was_correct", True)
                          .execute())
         correct = correct_res.count or 0
@@ -136,6 +277,7 @@ def get_stats() -> dict:
         if evaluated > 0:
             rows = (sb.table("predictions")
                       .select("league, was_correct")
+                      .eq("sport", "soccer")
                       .not_.is_("result_actual", "null")
                       .execute()).data or []
             for row in rows:
@@ -175,6 +317,7 @@ def get_market_stats() -> dict:
                   .select("pred_winner, result_actual, was_correct, markets_json, "
                           "result_home_goals, result_away_goals, "
                           "result_corners, result_yellow_cards, result_fouls")
+                  .eq("sport", "soccer")
                   .not_.is_("result_actual", "null")
                   .execute()).data or []
     except Exception as e:

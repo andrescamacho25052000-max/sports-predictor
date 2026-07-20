@@ -102,6 +102,22 @@ export interface CornerCardsData {
   };
 }
 
+export interface OddsMarket {
+  odds: number;   // mejor cuota decimal disponible
+  prob: number;   // probabilidad del modelo (%)
+  ev: number;     // valor esperado por unidad apostada (>0 = hay valor)
+  value: boolean; // true si ev > 0
+}
+
+export interface OddsData {
+  source: string;
+  bookmaker_count: number;
+  commence_time?: string | null;
+  // claves: "1" | "X" | "2" | "over_2.5" | "under_2.5" ...
+  markets: Record<string, OddsMarket>;
+  best_value: ({ market: string } & OddsMarket)[];
+}
+
 export interface Prediction {
   home_team: string;
   away_team: string;
@@ -114,6 +130,7 @@ export interface Prediction {
   model: string;
   poisson?: PoissonData;
   corners_cards?: CornerCardsData;
+  odds?: OddsData;
   team_stats?: {
     home: TeamData;
     away: TeamData;
@@ -155,41 +172,134 @@ export async function fetchMatches(league: string): Promise<Match[]> {
   return data.matches;
 }
 
-export interface BetSlipLeg {
-  match: string;
-  market: string;
-  prob: number;
-  min_odds: number;
-  note?: string;
+
+/* ── Track record / estadísticas públicas ────────────────────────────────── */
+
+export interface GlobalStats {
+  total_predictions: number;
+  evaluated: number;
+  correct: number;
+  accuracy: number | null;
+  pending: number;
+  by_league: Record<string, { total: number; correct: number }>;
 }
 
-export interface BetSlipAnalysis {
-  legs: BetSlipLeg[];
-  combined_prob: number;
-  fair_odds: number;
-  offered_odds: number | null;
-  value: "negativo" | "justo" | "positivo";
-  verdict: string;
-  weakest_leg?: string;
-  stake?: number | null;
+export interface MarketStats {
+  result_1x2:    { n: number; accuracy: number | null };
+  over_under_25: { n: number; accuracy: number | null };
+  btts:          { n: number; accuracy: number | null };
+  corners:       { n: number; line_9_5_accuracy: number | null; avg_error: number | null };
+  yellow_cards:  { n: number; line_3_5_accuracy: number | null; avg_error: number | null };
 }
 
-export async function analyzeBetSlip(imageBase64: string, mediaType: string): Promise<BetSlipAnalysis> {
-  const { data } = await api.post("/analyze-bet-slip", {
-    image: imageBase64,
-    media_type: mediaType,
-  }, { timeout: 120000 });
+export interface PredictionRecord {
+  id: number;
+  home_team: string;
+  away_team: string;
+  league: string | null;
+  match_date: string | null;
+  created_at: string;
+  home_crest: string | null;
+  away_crest: string | null;
+  pred_winner: string | null;
+  confidence: number | null;
+  result_actual: string | null;
+  result_home_goals: number | null;
+  result_away_goals: number | null;
+  was_correct: boolean | null;
+}
+
+export async function fetchStats(): Promise<GlobalStats> {
+  const { data } = await api.get("/predictions/stats");
   return data;
 }
 
-export async function fetchPrediction(match: Match, league: string): Promise<Prediction> {
-  const { data } = await api.post("/predict", {
-    home_team:  match.home,
-    away_team:  match.away,
-    home_id:    match.home_id,
-    away_id:    match.away_id,
-    match_date: match.date,
-    league,
+export async function fetchMarketStats(): Promise<MarketStats> {
+  const { data } = await api.get("/predictions/market-stats");
+  return data;
+}
+
+/** Feed público: últimos partidos distintos predichos (sin datos de usuario). */
+export async function fetchRecentPublic(limit = 10): Promise<PredictionRecord[]> {
+  const { data } = await api.get(`/predictions/recent?limit=${limit}`);
+  return data.predictions ?? [];
+}
+
+export interface MyPredictionsResponse {
+  predictions: PredictionRecord[];
+  is_admin: boolean;
+}
+
+/** Historial del usuario autenticado (o todo, si es administrador). */
+export async function fetchMyPredictions(token: string, limit = 100): Promise<MyPredictionsResponse> {
+  const { data } = await api.get(`/predictions/mine?limit=${limit}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
+  return { predictions: data.predictions ?? [], is_admin: !!data.is_admin };
+}
+
+export interface AdminUserStats {
+  registered: number;
+  active: number;
+  window_minutes: number;
+}
+
+/** Estadísticas de usuarios (solo admin): registrados y activos ahora. */
+export async function fetchAdminStats(token: string): Promise<AdminUserStats> {
+  const { data } = await api.get("/admin/stats", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data;
+}
+
+/* ── NBA ──────────────────────────────────────────────────────────────────── */
+
+export interface NbaTeam {
+  name: string;
+  logo: string;
+}
+
+export interface NbaPrediction {
+  sport: "nba";
+  home_team: string;
+  away_team: string;
+  model: string;
+  probabilities: { home_win: number; away_win: number };
+  elo: { home: number; away: number; matched_home: string; matched_away: string };
+  expected_points: { home: number; away: number; total: number; margin: number };
+  over_under: Record<string, { over: number; under: number }>;
+  handicap: Record<string, number>;
+  meta: { scoring_season: string | null; has_home_stats: boolean; has_away_stats: boolean };
+  odds?: OddsData;
+  prediction_id?: number;
+}
+
+export async function fetchNbaTeams(): Promise<{ teams: NbaTeam[]; ready: boolean }> {
+  const { data } = await api.get("/nba/teams");
+  return { teams: data.teams ?? [], ready: !!data.ready };
+}
+
+export async function fetchNbaPrediction(home: string, away: string, token: string): Promise<NbaPrediction> {
+  const { data } = await api.post(
+    "/nba/predict",
+    { home_team: home, away_team: away },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  return data;
+}
+
+export async function fetchPrediction(match: Match, league: string, token?: string | null): Promise<Prediction> {
+  const { data } = await api.post(
+    "/predict",
+    {
+      home_team:  match.home,
+      away_team:  match.away,
+      home_id:    match.home_id,
+      away_id:    match.away_id,
+      match_date: match.date,
+      league,
+    },
+    token ? { headers: { Authorization: `Bearer ${token}` } } : undefined,
+  );
   return data;
 }
