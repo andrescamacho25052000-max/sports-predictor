@@ -210,3 +210,23 @@ Registro de tareas del proyecto Predictor Deportivo.
   un segundo `next dev` sobre el mismo directorio).
 </content>
 </invoke>
+
+## Despliegue a producción — 2026-07-20 (en curso)
+
+- [x] **Código subido a GitHub** — commit con las fases 11+ (64 archivos: NBA,
+  auth, EV, Dixon-Coles, base scouting, tests). Verificado que `.env` no está
+  versionado y sin secretos en el código.
+- [x] **Artefactos de modelo versionados** — los 8 JSON pequeños del runtime
+  (dixon_coles, nacional, ensemble, elo, forma, NBA) se excluyeron del gitignore
+  y viajan con el repo (~50 KB); Railway no necesita reconstruirlos.
+- [x] **`scipy` declarado en requirements.txt** (lo usa `ml/dixon_coles.py`).
+- [x] **Repo transferido a la cuenta personal** — de `andres25052000`
+  (universitaria, correo deshabilitado) a `andrescamacho25052000-max` (Gmail).
+  Remote local y `user.email` actualizados.
+- [ ] Railway: crear proyecto desde GitHub (root `/backend`) + variables de
+  entorno (sección 6.3 del doc + `ODDS_API_KEY` pendiente).
+- [ ] Vercel: importar repo (root `/frontend`) + `NEXT_PUBLIC_API_URL`,
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+- [ ] `FRONTEND_URL` en Railway (CORS) con el dominio de Vercel.
+- [ ] Supabase: evitar pausa del plan gratis (UptimeRobot/cron).
+- [ ] Prueba end-to-end en producción.
