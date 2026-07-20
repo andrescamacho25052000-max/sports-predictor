@@ -223,10 +223,17 @@ Registro de tareas del proyecto Predictor Deportivo.
 - [x] **Repo transferido a la cuenta personal** — de `andres25052000`
   (universitaria, correo deshabilitado) a `andrescamacho25052000-max` (Gmail).
   Remote local y `user.email` actualizados.
-- [ ] Railway: crear proyecto desde GitHub (root `/backend`) + variables de
-  entorno (sección 6.3 del doc + `ODDS_API_KEY` pendiente).
-- [ ] Vercel: importar repo (root `/frontend`) + `NEXT_PUBLIC_API_URL`,
-  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-- [ ] `FRONTEND_URL` en Railway (CORS) con el dominio de Vercel.
-- [ ] Supabase: evitar pausa del plan gratis (UptimeRobot/cron).
-- [ ] Prueba end-to-end en producción.
+- [x] **Railway desplegado** — proyecto `dynamic-motivation`, root `/backend`,
+  5 variables configuradas. Backend ACTIVE en
+  https://sports-predictor-production-9144.up.railway.app (endpoints /leagues,
+  /predictions/recent, /nba/teams verificados 200; /predict sin token 401 ✓).
+- [x] **Vercel desplegado** — root `/frontend` + 3 variables `NEXT_PUBLIC_*`.
+  App en vivo: https://sports-predictor-pi-gilt.vercel.app (home con partidos
+  reales, track record con datos de Supabase y página NBA verificados).
+- [x] **CORS verificado** — el backend acepta el dominio de Vercel vía la regla
+  `*.vercel.app`; `FRONTEND_URL` queda opcional.
+- [ ] Probar registro/login + predicción con sesión en producción (manual).
+- [ ] `ODDS_API_KEY` en Railway cuando se cree la cuenta de The Odds API.
+- [ ] Supabase: evitar pausa del plan gratis (UptimeRobot/cron sobre el backend
+  y ping a Supabase).
+- [ ] Opcional: dominio propio y monitoreo de uptime (paso 8-9 del doc).
