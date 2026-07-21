@@ -237,3 +237,54 @@ Registro de tareas del proyecto Predictor Deportivo.
 - [ ] Supabase: evitar pausa del plan gratis (UptimeRobot/cron sobre el backend
   y ping a Supabase).
 - [ ] Opcional: dominio propio y monitoreo de uptime (paso 8-9 del doc).
+
+## Rediseño Statix + página de jugadores — 2026-07-20
+
+Rediseño de la interfaz según el prototipo aprobado en Lovable ("Statix — Sports
+Intelligence"), replicado a partir de capturas y alimentado con datos reales.
+Desplegado a producción (commit `cdb2b79`).
+
+### Layout global (shell Statix)
+- [x] **Tokens de diseño** en `app/globals.css` (tema negro-verdoso, acento verde
+  `#34d399`, azul secundario, utilidad `.eyebrow` mono en mayúsculas).
+- [x] **`components/layout/`**: `TopBar`, `Sidebar`, `BottomNav`, `AppShell`,
+  `ComingSoon`, `nav.ts`. Montado en `app/layout.tsx` (envuelve toda la app).
+- [x] Se retiran las navs inferiores duplicadas de `page`, `match`, `nba`,
+  `track-record`, `history` (ahora las provee el shell).
+
+### Home rediseñada (`components/home/`)
+- [x] `Hero`, `KpiRow`, `UpcomingStatix`, `ModelPerformance`, `LeaguesGrid`.
+  4 KPIs en vivo, precisión real por mercado, feed de la comunidad y ligas —
+  **datos reales, mensaje honesto** (acierto 1X2 ~33.7%, sin el 71.4% ficticio).
+
+### Páginas nuevas
+- [x] **`/cuenta`** — Mi cuenta: perfil (Supabase Auth) + KPIs propios + últimas
+  predicciones (`/predictions/mine`) + cambio de contraseña. Ítem "Mi cuenta" en
+  el sidebar y "Perfil" de la nav móvil apunta aquí.
+- [x] **`/ligas`** — ligas reales (`/leagues`) + conteo de próximos partidos.
+- [x] **`/partidos`** — fixtures reales (`/upcoming`) con filtros por fecha.
+- [x] **`/jugadores`** — buscador + ranking de máximos goleadores (datos reales).
+- [x] Placeholders coherentes con el prototipo: `/equipos`, `/comunidad`, `/predicciones`.
+
+### Backend — base de jugadores expuesta (doc 22.1)
+- [x] `supabase_client.get_top_scorers()` y `search_players()` — leen
+  `scouting_players` (goles de carrera), con caché en memoria (~15.388 jugadores).
+- [x] Endpoints `GET /players/top` y `GET /players/search` en `main.py`.
+- [x] Tests: `backend/tests/test_players.py` (orden, límite, búsqueda) — pasan.
+- [x] Verificado en producción: Railway sirve el endpoint con datos correctos
+  (Cristiano 124, Kane 75, Messi 71…, acentos UTF-8 OK).
+
+### Descubierto durante el trabajo
+- El "mojibake" en nombres de jugadores era un artefacto de la consola de Windows
+  (`json.tool` / cp1252), **no de los datos**: la base está bien codificada. No hizo
+  falta `ftfy`.
+- El dev server vía `launch.json` corre desde la raíz del repo y **no carga
+  `frontend/.env.local`**; para verificar en local hay que correr `next dev` desde
+  `frontend/`.
+
+### Pendientes de este rediseño
+- [ ] **Equipos**: página real requiere endpoint de posiciones/forma (no existe).
+- [ ] **Comunidad**: feature social completa (posts, seguir) desde cero.
+- [ ] `current_club` (Wikidata) tiene errores (p. ej. Lewandowski→"Chicago Fire");
+  por eso las tarjetas de jugador muestran la selección, no el club.
+- [ ] Búsqueda global `⌘K` de la barra superior: hoy es visual, falta la lógica.

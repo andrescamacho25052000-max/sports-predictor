@@ -8,6 +8,7 @@ Aplicación full-stack para predecir resultados de partidos de fútbol. Combina 
 
 - [Arquitectura](#arquitectura)
 - [Funcionalidades](#funcionalidades)
+- [Interfaz (rediseño Statix)](#interfaz-rediseño-statix)
 - [Stack tecnológico](#stack-tecnológico)
 - [APIs externas](#apis-externas)
 - [Configuración local](#configuración-local)
@@ -74,6 +75,12 @@ Aplicación full-stack para predecir resultados de partidos de fútbol. Combina 
 
 | Funcionalidad | Descripción |
 |---|---|
+| Interfaz Statix | Rediseño completo de la UI: barra superior fija, sidebar (desktop), navegación inferior (móvil) y tema oscuro con acento verde esmeralda (ver [Interfaz](#interfaz-rediseño-statix)) |
+| Home rediseñada | Hero + 4 KPIs en vivo + próximos partidos + precisión real por mercado + feed de la comunidad + ligas principales, todo con datos reales |
+| Mi cuenta | Página `/cuenta`: perfil (email, miembro desde), KPIs propios, últimas predicciones y cambio de contraseña |
+| Directorio de ligas | Página `/ligas`: todas las competiciones cubiertas con su conteo de próximos partidos |
+| Calendario de partidos | Página `/partidos`: fixtures reales con filtros por fecha (hoy / mañana / esta semana) |
+| Tarjeta de goleadores | Página `/jugadores`: buscador + ranking de máximos goleadores (goles de carrera, penales, años) desde la base propia |
 | Cuotas reales + EV | Trae cuotas reales (The Odds API) y calcula el valor esperado de cada mercado automáticamente |
 | Cuentas de usuario | Registro/login con Supabase Auth (email + contraseña); requiere sesión para predecir |
 | Cambio de contraseña | Cualquier usuario puede cambiar su contraseña desde la app |
@@ -95,6 +102,40 @@ Aplicación full-stack para predecir resultados de partidos de fútbol. Combina 
 | Clima en estadio | Pronóstico Open-Meteo con impacto en el partido |
 | Lesionados | Lista de jugadores no disponibles en tiempo real |
 | Evolución del modelo | Historial de versiones y accuracy por iteración |
+
+---
+
+## Interfaz (rediseño Statix)
+
+La interfaz sigue el sistema de diseño **"Statix — Sports Intelligence"** (tema oscuro
+negro-verdoso, acento verde esmeralda `#34d399`, azul secundario, tarjetas muy
+redondeadas y etiquetas de sección en mayúsculas monoespaciadas). Los tokens viven en
+`app/globals.css` (Tailwind v4, `@theme`).
+
+**Shell global** (`components/layout/`, montado en `app/layout.tsx`):
+
+- **Barra superior fija** — logo, navegación horizontal (desktop ancho), búsqueda global
+  (`⌘K`, visual por ahora), notificaciones y menú de sesión.
+- **Sidebar** (desktop) — navegación principal con ítem activo resaltado y "ligas seguidas".
+- **Navegación inferior** (móvil) — Inicio · Partidos · IA · Stats · Perfil.
+
+**Páginas con datos reales:**
+
+| Ruta | Contenido | Fuente |
+|---|---|---|
+| `/` | Hero, 4 KPIs, próximos partidos, precisión por mercado, feed, ligas | `/predictions/stats`, `/leagues`, `/upcoming`, `/predictions/market-stats`, `/predictions/recent` |
+| `/cuenta` | Perfil + KPIs del usuario + últimas predicciones | Supabase Auth + `/predictions/mine` |
+| `/ligas` | Ligas cubiertas + conteo de próximos partidos | `/leagues` + `/upcoming` |
+| `/partidos` | Fixtures con filtros por fecha | `/upcoming` |
+| `/jugadores` | Ranking de goleadores + buscador | `/players/top`, `/players/search` |
+| `/track-record` | Precisión verificable en vivo (ítem "Estadísticas") | `/predictions/stats` + `/predictions/market-stats` |
+
+`/equipos`, `/comunidad` y `/predicciones` son placeholders ("próximamente"): exponer
+posiciones/forma de equipos y un feed social requiere endpoints de backend que aún no existen.
+
+**Mensaje honesto:** a diferencia del prototipo (datos ficticios, precisión 71.4%), la app
+muestra las cifras reales del backend (p. ej. acierto 1X2 ~33.7% en vivo) y presenta el EV
+como información, no como ganancia asegurada (ver [Limitaciones conocidas](#limitaciones-conocidas)).
 
 ---
 
@@ -340,6 +381,8 @@ La documentación interactiva completa (Swagger UI) está en `/docs`.
 | `GET` | `/upcoming` | ~32 próximos partidos de todas las ligas en paralelo |
 | `GET` | `/search?q={nombre}` | Busca partidos donde juegue un equipo |
 | `GET` | `/teams/search?q={nombre}` | Busca equipos por nombre (índice local) |
+| `GET` | `/players/top?limit={n}` | **Público** — máximos goleadores (goles internacionales de carrera) desde la base propia `scouting_players` |
+| `GET` | `/players/search?q={nombre}` | **Público** — busca jugadores por nombre en la base propia |
 
 ### Predicciones
 
@@ -769,8 +812,8 @@ sports-predictor/
 │   ├── api_sports.py      # Cliente API-Sports (100 req/día, caché 1h)
 │   ├── odds_api.py        # Cliente The Odds API (cuotas reales + cálculo de EV)
 │   ├── weather_api.py     # Cliente Open-Meteo (geocodificación + pronóstico)
-│   ├── supabase_client.py # CRUD de predicciones + estadísticas
-│   ├── tests/             # Pytest (test_odds_api.py)
+│   ├── supabase_client.py # CRUD de predicciones + estadísticas + goleadores (get_top_scorers/search_players)
+│   ├── tests/             # Pytest (test_odds_api.py, test_players.py, …)
 │   ├── result_checker.py  # Busca y guarda resultados reales cada hora
 │   ├── mock_data.py       # Datos de fallback cuando las APIs fallan
 │   ├── predict_ultra.py   # (experimental) variante alternativa de predicción
@@ -798,12 +841,27 @@ sports-predictor/
 │
 └── frontend/
     ├── app/
-    │   ├── page.tsx              # Página principal: búsqueda + próximos partidos + partido manual
+    │   ├── page.tsx              # Home rediseñada (hero + KPIs + partidos + rankings)
     │   ├── match/page.tsx        # Predicción detallada con todos los mercados
     │   ├── history/page.tsx      # Historial de predicciones
     │   ├── track-record/page.tsx # Track record público (precisión en vivo)
-    │   └── layout.tsx            # Layout global (fuentes, metadatos, AuthProvider)
+    │   ├── cuenta/page.tsx       # Mi cuenta (perfil + KPIs del usuario)
+    │   ├── ligas/page.tsx        # Directorio de ligas (datos reales)
+    │   ├── partidos/page.tsx     # Calendario de fixtures con filtros por fecha
+    │   ├── jugadores/page.tsx    # Ranking de goleadores + buscador (datos reales)
+    │   ├── equipos/ · comunidad/ · predicciones/  # placeholders "próximamente"
+    │   └── layout.tsx            # Layout global: envuelve todo en <AppShell> (AuthProvider)
     ├── components/
+    │   ├── layout/              # Shell Statix
+    │   │   ├── AppShell.tsx     #   compone barra + sidebar + nav inferior
+    │   │   ├── TopBar.tsx       #   barra superior fija (logo, búsqueda, sesión)
+    │   │   ├── Sidebar.tsx      #   navegación lateral (desktop) + ligas seguidas
+    │   │   ├── BottomNav.tsx    #   navegación inferior tipo app (móvil)
+    │   │   ├── ComingSoon.tsx   #   pantalla placeholder de secciones futuras
+    │   │   └── nav.ts           #   configuración de navegación
+    │   ├── home/                # Secciones de la home Statix
+    │   │   ├── Hero.tsx · KpiRow.tsx · UpcomingStatix.tsx
+    │   │   └── ModelPerformance.tsx · LeaguesGrid.tsx
     │   ├── TeamSearch.tsx       # Input de búsqueda con debounce
     │   ├── UpcomingMatches.tsx  # Panel de próximos partidos agrupados por liga
     │   ├── CustomMatchForm.tsx  # Formulario de partido manual con autocompletado
@@ -812,10 +870,10 @@ sports-predictor/
     │   ├── ParlaySuggestions.tsx # Sugerencias automáticas de combinadas
     │   ├── AuthMenu.tsx         # Botón de sesión (entrar / email + salir)
     │   ├── AuthModal.tsx        # Modal de login/registro (Supabase Auth)
-    │   ├── PredictorForm.tsx    # (legado) formulario básico original
+    │   ├── ChangePasswordModal.tsx # Modal de cambio de contraseña
     │   └── ui/                  # Componentes base (shadcn/ui): badge, card, tabs, progress
     └── lib/
-        ├── api.ts      # Cliente axios + todas las interfaces TypeScript de la API
+        ├── api.ts      # Cliente axios + interfaces (incluye Player + fetchTopScorers/searchPlayers)
         ├── auth.tsx    # AuthProvider + hook useAuth (Supabase Auth)
         ├── config.ts   # Configuración global del frontend
         ├── markets.ts  # Helpers para formatear y mostrar mercados de apuesta
@@ -826,6 +884,13 @@ sports-predictor/
 ---
 
 ## Despliegue
+
+> **En producción.** La app está desplegada y en vivo:
+> - **Frontend (Vercel):** https://sports-predictor-pi-gilt.vercel.app
+> - **Backend (Railway):** https://sports-predictor-production-9144.up.railway.app
+> - **Repositorio:** `github.com/andrescamacho25052000-max/sports-predictor` (cuenta personal)
+>
+> Cada `git push` a `master` redespliega automáticamente ambos (Railway el backend, Vercel el frontend). Los artefactos de modelo pequeños (`dixon_coles`, Elo, NBA, etc.) están versionados en `backend/ml/data/`, así que el backend arranca en producción sin reconstruirlos.
 
 ### Backend — Railway
 
