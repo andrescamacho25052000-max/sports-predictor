@@ -166,6 +166,18 @@ def get_leagues():
     return {"leagues": leagues}
 
 
+@app.get("/players/top")
+def get_top_players(limit: int = 20):
+    """Máximos goleadores (goles internacionales de carrera) desde la base propia."""
+    return {"players": sbc.get_top_scorers(limit)}
+
+
+@app.get("/players/search")
+def search_players_endpoint(q: str = ""):
+    """Busca jugadores por nombre en la base propia de scouting."""
+    return {"players": sbc.search_players(q)}
+
+
 @app.get("/leagues/{league}/matches")
 def get_matches(league: str):
     real_matches = fapi.get_matches(league)

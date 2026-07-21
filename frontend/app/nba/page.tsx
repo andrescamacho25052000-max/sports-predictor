@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { Zap, TrendingUp, Lock, BarChart3, Target } from "lucide-react";
+import { Zap, TrendingUp, Lock, Target } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import AuthMenu from "@/components/AuthMenu";
 import SportSwitcher from "@/components/SportSwitcher";
@@ -241,18 +240,6 @@ export default function NbaPage() {
         )}
       </div>
 
-      {/* Bottom nav (mobile) */}
-      <nav className="fixed bottom-0 left-0 right-0 sm:hidden bg-gray-950/95 backdrop-blur border-t border-white/10 flex z-50">
-        <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
-          <TrendingUp size={20} /><span className="text-xs">Predecir</span>
-        </Link>
-        <Link href="/nba" className="flex-1 flex flex-col items-center gap-1 py-3 text-orange-400">
-          <span className="text-base leading-none">🏀</span><span className="text-xs font-medium">NBA</span>
-        </Link>
-        <Link href="/track-record" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
-          <BarChart3 size={20} /><span className="text-xs">Récord</span>
-        </Link>
-      </nav>
     </main>
   );
 }

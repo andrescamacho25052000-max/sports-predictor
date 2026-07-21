@@ -288,6 +288,33 @@ export async function fetchNbaPrediction(home: string, away: string, token: stri
   return data;
 }
 
+/* ── Jugadores (tarjeta de goleador) ──────────────────────────────────────── */
+
+export interface Player {
+  name: string;
+  national_team: string | null;
+  current_club: string | null;
+  position: string | null;
+  goals: number;
+  penalties: number;
+  own_goals: number;
+  matches_scored: number | null;
+  first_year: number | null;
+  last_year: number | null;
+}
+
+/** Máximos goleadores (goles internacionales de carrera) desde la base propia. */
+export async function fetchTopScorers(limit = 20): Promise<Player[]> {
+  const { data } = await api.get(`/players/top?limit=${limit}`);
+  return data.players ?? [];
+}
+
+/** Busca jugadores por nombre en la base propia. */
+export async function searchPlayers(q: string): Promise<Player[]> {
+  const { data } = await api.get(`/players/search?q=${encodeURIComponent(q)}`);
+  return data.players ?? [];
+}
+
 export async function fetchPrediction(match: Match, league: string, token?: string | null): Promise<Prediction> {
   const { data } = await api.post(
     "/predict",

@@ -1,14 +1,42 @@
 @import "tailwindcss";
 
+/* ── Tokens del sistema de diseño "Statix" ──
+   Tema oscuro negro-verdoso con acento verde esmeralda y azul secundario.
+   Replicado del prototipo aprobado en Lovable (doc. sección 22.3). */
 :root {
-  --background: #030712;
-  --foreground: #f9fafb;
-  --radius: 0.75rem;
+  --background: #090c0d;
+  --foreground: #f3f5f6;
+
+  --surface: #0f1517;        /* tarjetas */
+  --surface-2: #0b1113;      /* insets dentro de tarjetas */
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  --muted: #9aa3ab;          /* texto secundario */
+  --muted-2: #6b747c;        /* texto terciario / labels */
+
+  --accent: #34d399;         /* verde esmeralda (CTA, activos, home) */
+  --accent-strong: #2bd98c;
+  --accent-2: #38bdf8;       /* azul/cian secundario (away, gradientes) */
+  --danger: #f87171;
+
+  --radius: 1rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-2: var(--accent-2);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -22,10 +50,19 @@ body {
 }
 
 /* Scrollbar personalizado */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* Selección de texto */
 ::selection { background: rgba(52, 211, 153, 0.3); color: white; }
+
+/* Utilidad: etiqueta de sección en mayúsculas monoespaciada (estilo Statix) */
+.eyebrow {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  color: var(--muted-2);
+}

@@ -8,8 +8,7 @@ import { motion } from "framer-motion";
 import ProbabilityBar  from "@/components/ProbabilityBar";
 import ValuePanel      from "@/components/ValuePanel";
 import ParlaySuggestions from "@/components/ParlaySuggestions";
-import { TrendingUp, History, BarChart3, Lock } from "lucide-react";
-import Link from "next/link";
+import { Lock } from "lucide-react";
 import AuthMenu from "@/components/AuthMenu";
 
 function formatDate(d: string) {
@@ -254,21 +253,6 @@ function MatchContent() {
 
       </div>
 
-      {/* ── Bottom nav (solo mobile) ── */}
-      <nav className="fixed bottom-0 left-0 right-0 sm:hidden bg-gray-950/95 backdrop-blur border-t border-white/10 flex z-50">
-        <Link href="/" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
-          <TrendingUp size={20} />
-          <span className="text-xs">Predecir</span>
-        </Link>
-        <Link href="/track-record" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
-          <BarChart3 size={20} />
-          <span className="text-xs">Récord</span>
-        </Link>
-        <Link href="/history" className="flex-1 flex flex-col items-center gap-1 py-3 text-white/40 hover:text-white/70 transition-colors">
-          <History size={20} />
-          <span className="text-xs">Historial</span>
-        </Link>
-      </nav>
     </main>
   );
 }
